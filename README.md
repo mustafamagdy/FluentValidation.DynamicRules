@@ -1,4 +1,4 @@
-# Dynamic Rules for FluentValidation
+# Dynamic Rules for [FluentValidation](https://fluentvalidation.net/)
 
 Add support to dynamically loading validation rules from xml based rule definition
 
