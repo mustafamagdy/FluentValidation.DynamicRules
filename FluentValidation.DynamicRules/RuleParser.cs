@@ -42,8 +42,8 @@ namespace FluentValidation.DynamicRules {
           if (fixedLength != null) {
             min = max = Convert.ToInt32(fixedLength.Value);
           } else {
-            min = Convert.ToInt32(node.Attribute("min").Value);
-            max = Convert.ToInt32(node.Attribute("max").Value);
+            min = Convert.ToInt32(node.Attribute("min")!.Value);
+            max = Convert.ToInt32(node.Attribute("max")!.Value);
           }
 
           return new LengthRule(message, min, max);

@@ -8,4 +8,6 @@ public sealed class NotEqualRule : PropertyRule {
 
   public object Value { get; }
   public string? WhenPropName { get; }
+
+  public void Deconstruct(out object value) { value = Value; }
 }

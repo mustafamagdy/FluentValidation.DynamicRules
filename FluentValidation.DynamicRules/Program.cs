@@ -7,7 +7,8 @@ namespace FluentValidation.DynamicRules {
 <rules>
     <rule-for prop=""firstName"">
       <not-empty message=""value cannot be empty"" />
-    </rule-for>
+      <string-len min=""10"" max=""20"" />
+   </rule-for>
     <rule-for prop=""address"">
       <string-len min=""10"" max=""20"" />
     </rule-for>
@@ -15,7 +16,7 @@ namespace FluentValidation.DynamicRules {
       <not-equal value=""0""/>
     </rule-for>
     <rule-for prop=""postalCode"">
-      <must-be call=""BeValidPostalCode"" message=""postal code is not valid"" />
+      <must-be call=""BeValidPostalCode"" message=""postal code is not valid!!!"" />
     </rule-for>
 </rules>";
       
@@ -23,10 +24,10 @@ namespace FluentValidation.DynamicRules {
       var builder = parser.Parse(xml);
       var customerValidator = new CustomerValidator(builder);
       var customer1 = new Customer() {
-        // FirstName = "test customer"
+        FirstName = "test",
         Address = "test address here",
         Discount = 0,
-        PostalCode = "test"
+        PostalCode = ""
       };
 
       var validationResult = customerValidator.Validate(customer1);

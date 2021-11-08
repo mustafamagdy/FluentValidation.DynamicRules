@@ -8,4 +8,9 @@ public sealed class LengthRule : PropertyRule {
 
   public int Min { get; }
   public int Max { get; }
+
+  public void Deconstruct(out int min, out int max) {
+    min = Min;
+    max = Max;  
+  }
 }
