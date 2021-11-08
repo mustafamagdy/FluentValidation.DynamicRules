@@ -29,7 +29,7 @@ Add support to dynamically loading validation rules from xml based rule definiti
     <rule-for prop="address">
       <string-len min="20" max="250" />
     </rule-for>
-    <rule-for prop="discount" type="System.Int32">
+    <rule-for prop="discount">
       <not-equal value="0"/>
     </rule-for>
     <rule-for prop="postalCode">
