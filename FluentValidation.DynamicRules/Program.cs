@@ -12,7 +12,7 @@ namespace FluentValidation.DynamicRules {
     <rule-for prop=""address"">
       <string-len min=""10"" max=""20"" />
     </rule-for>
-    <rule-for prop=""discount"" type=""System.Int32"">
+    <rule-for prop=""discount"">
       <not-equal value=""0""/>
     </rule-for>
     <rule-for prop=""postalCode"">

@@ -20,8 +20,7 @@ namespace FluentValidation.DynamicRules {
         }).ToArray();
 
       var validatedProperties = ruleSet.Select(a => {
-        var propType = Type.GetType(a.PropType);
-        var validatedProperty = new ValidatedProperty(a.Prop, propType!, a.Rules.Select(ParseRule));
+        var validatedProperty = new ValidatedProperty(a.Prop,a.Rules.Select(ParseRule));
         return validatedProperty;
       });
       return  new ValidationBuilder(validatedProperties);

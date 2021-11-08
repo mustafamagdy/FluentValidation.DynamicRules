@@ -25,37 +25,38 @@ public class ValidationBuilder {
     var ruleFor = GetRuleFor(validator, prop);
     MethodInfo? method;
     MethodCallExpression methodCall;
+    var propType = GetPropertyType<T>(prop.PropertyName);
     switch (rule.RuleType) {
       case RuleType.NotEmpty: {
-        method = GetValidationMethod<T>(nameof(DefaultValidatorExtensions.NotEmpty), prop.Type);
+        method = GetValidationMethod<T>(nameof(DefaultValidatorExtensions.NotEmpty), propType);
         methodCall = Expression.Call(null, method!, ruleFor);
         break;
       }
       case RuleType.Length: {
         var (min, max) = (LengthRule)rule;
-        method = GetValidationMethod<T>(nameof(DefaultValidatorExtensions.Length), prop.Type, typeof(int), typeof(int));
+        method = GetValidationMethod<T>(nameof(DefaultValidatorExtensions.Length), propType, typeof(int), typeof(int));
         methodCall = Expression.Call(null, method!, ruleFor, Expression.Constant(min), Expression.Constant(max));
         break;
       }
       case RuleType.NotEqual: {
-        var comparerGenericType = typeof(IEqualityComparer<>).MakeGenericType(prop.Type);
-        var defaultComparerType = typeof(DefaultEqualityComparer<>).MakeGenericType(prop.Type);
+        var comparerGenericType = typeof(IEqualityComparer<>).MakeGenericType(propType);
+        var defaultComparerType = typeof(DefaultEqualityComparer<>).MakeGenericType(propType);
         var defaultComparer = GetDefaultComparerForType(defaultComparerType);
         var value = ((NotEqualRule)rule).Value;
-        method = GetValidationMethod<T>(nameof(DefaultValidatorExtensions.NotEqual), prop.Type, prop.Type,
+        method = GetValidationMethod<T>(nameof(DefaultValidatorExtensions.NotEqual), propType, propType,
           comparerGenericType);
-        methodCall = Expression.Call(null, method!, ruleFor, Expression.Constant(Convert.ChangeType(value, prop.Type)),
+        methodCall = Expression.Call(null, method!, ruleFor, Expression.Constant(Convert.ChangeType(value, propType)),
           Expression.Constant(defaultComparer));
         break;
       }
       case RuleType.MustBe: {
         var mustMethod = validator.GetType().GetMethodForType(((MustRule)rule).MethodName,
-          BindingFlags.NonPublic | BindingFlags.Instance, prop.Type);
-        var genericTypeForMustMethod = typeof(Func<,>).MakeGenericType(prop.Type, typeof(bool));
-        var arg = Expression.Parameter(prop.Type);
+          BindingFlags.NonPublic | BindingFlags.Instance, propType);
+        var genericTypeForMustMethod = typeof(Func<,>).MakeGenericType(propType, typeof(bool));
+        var arg = Expression.Parameter(propType);
         var mustMethCall = Expression.Call(Expression.Constant(validator), mustMethod!, arg);
         var mustCall = Expression.Lambda(mustMethCall, arg);
-        method = GetValidationMethod<T>(nameof(DefaultValidatorExtensions.Must), prop.Type, genericTypeForMustMethod);
+        method = GetValidationMethod<T>(nameof(DefaultValidatorExtensions.Must), propType, genericTypeForMustMethod);
         methodCall = Expression.Call(null, method!, ruleFor, mustCall);
         break;
       }
@@ -63,7 +64,7 @@ public class ValidationBuilder {
         throw new NotSupportedException($"Rule {rule.RuleType.ToString()} is not supported");
     }
 
-    var builderOptionsGenericType = typeof(IRuleBuilderOptions<,>).MakeGenericType(typeof(T), prop.Type);
+    var builderOptionsGenericType = typeof(IRuleBuilderOptions<,>).MakeGenericType(typeof(T), propType);
     var builderOptionGenericFunc = typeof(Func<>).MakeGenericType(builderOptionsGenericType);
     var lambdaToCallValidationMethod = Expression.Lambda(builderOptionGenericFunc, methodCall).Compile();
     var validationFuncResult = lambdaToCallValidationMethod.DynamicInvoke();
@@ -89,6 +90,12 @@ public class ValidationBuilder {
     lambdaToCallWithMessageMethod.Compile().DynamicInvoke();
   }
 
+  private Type GetPropertyType<T>(string propName) {
+    return typeof(T)
+      .GetProperty(propName, BindingFlags.Instance | BindingFlags.IgnoreCase | BindingFlags.Public)?
+      .PropertyType;
+  }
+
   private Expression GetMessageMethodCall<T>(AbstractValidator<T> validator, string message) {
     var mustMethod = validator.GetType().GetMethodForType(nameof(DefaultValidatorOptions.WithMessage),
       BindingFlags.NonPublic | BindingFlags.Instance, typeof(string));
@@ -99,7 +106,7 @@ public class ValidationBuilder {
 
   private object GetDefaultComparerForType(Type type) => Activator.CreateInstance(type)!;
 
-  private static MethodInfo? GetValidationMethod<TObj>(string methodName, Type propType, params Type[] paramTypes) {
+  private MethodInfo? GetValidationMethod<TObj>(string methodName, Type propType, params Type[] paramTypes) {
     var methodParamTypes = new List<Type> { typeof(IRuleBuilder<,>) };
     methodParamTypes.AddRange(paramTypes);
     var method = typeof(DefaultValidatorExtensions).GetMethodForType(methodName, methodParamTypes.ToArray())
@@ -110,13 +117,14 @@ public class ValidationBuilder {
       : method.MakeGenericMethod(typeof(TObj));
   }
 
-  private static ConstantExpression GetRuleFor<T>(AbstractValidator<T> validator, ValidatedProperty prop) {
+  private ConstantExpression GetRuleFor<T>(AbstractValidator<T> validator, ValidatedProperty prop) {
     var pT = Expression.Parameter(typeof(T));
     var propExp = Expression.PropertyOrField(pT, prop.PropertyName);
-    var genericType = typeof(Func<,>).MakeGenericType(typeof(T), prop.Type);
+    var propType = GetPropertyType<T>(prop.PropertyName);
+    var genericType = typeof(Func<,>).MakeGenericType(typeof(T), propType);
     var lambda = Expression.Lambda(genericType, propExp, pT);
 
-    var ruleFor = validator.GetType().BaseType!.GetMethod("RuleFor")!.MakeGenericMethod(prop.Type);
+    var ruleFor = validator.GetType().BaseType!.GetMethod("RuleFor")!.MakeGenericMethod(propType);
     var result = ruleFor.Invoke(validator, new object?[] { lambda });
     return Expression.Constant(result);
   }
