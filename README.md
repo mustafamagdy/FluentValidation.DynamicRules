@@ -4,7 +4,7 @@ Add support to dynamically loading validation rules from xml based rule definiti
 
 ![main](https://github.com/mustafamagdy/FluentValidation.DynamicRules/actions/workflows/build.yml/badge.svg)
 
-
+-
 ## Setup
 ```c# 
     public class CustomerValidator : AbstractDynamicValidator<Customer> {
