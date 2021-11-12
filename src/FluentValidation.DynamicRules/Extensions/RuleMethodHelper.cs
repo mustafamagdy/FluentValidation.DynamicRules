@@ -23,11 +23,11 @@ public static class RuleMethodHelper {
     GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.Must), propType, paramTypes);
 
 
-  public static MethodInfo? GetWithMessageMethod<T>(this Type validatedType) {
-    var messageMethodParams = new[] { validatedType, typeof(string) };
+  public static MethodInfo? GetWithMessageMethod<T>(this Type validatedType, Type propType) {
+    var messageMethodParams = new[] { validatedType, propType };
     var method = typeof(DefaultValidatorOptions).GetStaticMethodForType(nameof(DefaultValidatorOptions.WithMessage),
       messageMethodParams);
-    return method!.MakeGenericMethod(typeof(T), typeof(string));
+    return method!.MakeGenericMethod(typeof(T), propType);
   }
 
 

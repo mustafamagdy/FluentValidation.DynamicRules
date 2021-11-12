@@ -79,7 +79,7 @@ public class ValidationBuilder {
 
     if (string.IsNullOrEmpty(rule.Message)) return;
 
-    var withMessageMethod = builderOptionsGenericType.GetWithMessageMethod<T>();
+    var withMessageMethod = builderOptionsGenericType.GetWithMessageMethod<T>(propType);
     var argResult = Expression.Constant(validationFuncResult);
     var theMessage = Expression.Constant(rule.Message);
     var messageMethodCall = Expression.Call(null, withMessageMethod!, argResult, theMessage);
