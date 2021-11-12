@@ -50,8 +50,7 @@ public class ValidationBuilder {
         break;
       }
       case RuleType.MustBe: {
-        var mustMethod = validator.GetType().GetMethodForType(((MustRule)rule).MethodName,
-          BindingFlags.NonPublic | BindingFlags.Instance, propType);
+        var mustMethod = validator.GetType().GetPrivateMethodForType(((MustRule)rule).MethodName, propType);
         var genericTypeForMustMethod = typeof(Func<,>).MakeGenericType(propType, typeof(bool));
         var arg = Expression.Parameter(propType);
         var mustMethCall = Expression.Call(Expression.Constant(validator), mustMethod!, arg);
@@ -73,8 +72,7 @@ public class ValidationBuilder {
 
     var messageMethodParams = new[] { builderOptionsGenericType, typeof(string) };
     var withMessageMethod = typeof(DefaultValidatorOptions)
-      .GetMethodForType(nameof(DefaultValidatorOptions.WithMessage),
-        BindingFlags.Public | BindingFlags.Static, messageMethodParams);
+      .GetStaticMethodForType(nameof(DefaultValidatorOptions.WithMessage), messageMethodParams);
 
     var theMessage = Expression.Constant(rule.Message);
     var withMessageGenericMethod = withMessageMethod!.MakeGenericMethod(typeof(T), typeof(string));
@@ -97,9 +95,10 @@ public class ValidationBuilder {
   }
 
   private Expression GetMessageMethodCall<T>(AbstractValidator<T> validator, string message) {
-    var mustMethod = validator.GetType().GetMethodForType(nameof(DefaultValidatorOptions.WithMessage),
-      BindingFlags.NonPublic | BindingFlags.Instance, typeof(string));
+    var mustMethod = validator.GetType()
+      .GetPrivateMethodForType(nameof(DefaultValidatorOptions.WithMessage), typeof(string));
     var arg = Expression.Parameter(typeof(string));
+
     var messageMethodCall = Expression.Call(Expression.Constant(validator), mustMethod!, arg);
     return Expression.Lambda(messageMethodCall, arg);
   }
@@ -109,7 +108,7 @@ public class ValidationBuilder {
   private MethodInfo? GetValidationMethod<TObj>(string methodName, Type propType, params Type[] paramTypes) {
     var methodParamTypes = new List<Type> { typeof(IRuleBuilder<,>) };
     methodParamTypes.AddRange(paramTypes);
-    var method = typeof(DefaultValidatorExtensions).GetMethodForType(methodName, methodParamTypes.ToArray())
+    var method = typeof(DefaultValidatorExtensions).GetPublicMethodForType(methodName, methodParamTypes.ToArray())
                  ?? throw new NullReferenceException($"Unable to find method {methodName} in type " +
                                                      $"{nameof(DefaultValidatorExtensions)}");
     return method!.GetGenericArguments().Length == 2
