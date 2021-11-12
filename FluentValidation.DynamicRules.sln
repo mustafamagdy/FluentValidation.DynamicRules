@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluentValidation.DynamicRules", "FluentValidation.DynamicRules\FluentValidation.DynamicRules.csproj", "{35D09D02-4DFC-4BB4-A681-D4A261EA6F98}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluentValidation.DynamicRules", "src\FluentValidation.DynamicRules\FluentValidation.DynamicRules.csproj", "{35D09D02-4DFC-4BB4-A681-D4A261EA6F98}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluentValidation.DynamicRules.Tests", "FluentValidation.DynamicRules.Tests\FluentValidation.DynamicRules.Tests.csproj", "{99D33F00-93BE-43E0-8028-DC5EE8CFAE25}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluentValidation.DynamicRules.Tests", "src\FluentValidation.DynamicRules.Tests\FluentValidation.DynamicRules.Tests.csproj", "{99D33F00-93BE-43E0-8028-DC5EE8CFAE25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
