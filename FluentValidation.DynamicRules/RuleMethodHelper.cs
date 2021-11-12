@@ -7,6 +7,30 @@ using FluentValidation.DynamicRules.Validators;
 namespace FluentValidation.DynamicRules;
 
 public static class RuleMethodHelper {
+  public static MethodInfo? GetNotEmptyValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.NotEmpty), propType);
+
+  public static MethodInfo? GetLengthValidator(this Type validatedType, Type propType, params Type[] paramTypes) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.Length), propType, paramTypes);
+
+  public static MethodInfo? GetNotEqualValidator(this Type validatedType, Type propType) {
+    var comparerGenericType = typeof(IEqualityComparer<>).MakeGenericType(propType);
+    return GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.NotEqual), propType, propType,
+      comparerGenericType);
+  }
+
+  public static MethodInfo? GetPredicateValidator(this Type validatedType, Type propType, params Type[] paramTypes) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.Must), propType, paramTypes);
+
+
+  public static MethodInfo? GetWithMessageMethod<T>(this Type validatedType) {
+    var messageMethodParams = new[] { validatedType, typeof(string) };
+    var method = typeof(DefaultValidatorOptions).GetStaticMethodForType(nameof(DefaultValidatorOptions.WithMessage),
+      messageMethodParams);
+    return method!.MakeGenericMethod(typeof(T), typeof(string));
+  }
+
+
   public static MethodInfo? GetValidationMethod(this Type validatedType, string methodName, Type propType, params Type[]
     paramTypes) {
     var methodParamTypes = new List<Type> { typeof(IRuleBuilder<,>) };
@@ -23,7 +47,7 @@ public static class RuleMethodHelper {
   public static Expression GetMessageMethodCall<T>(this AbstractValidator<T> validator) {
     var mustMethod = validator.GetType().GetPrivateMethodForType(nameof(DefaultValidatorOptions.WithMessage),
       typeof(string));
-    
+
     var arg01 = Expression.Parameter(typeof(string));
     var messageMethodCall = Expression.Call(Expression.Constant(validator), mustMethod!, arg01);
     return Expression.Lambda(messageMethodCall, arg01);

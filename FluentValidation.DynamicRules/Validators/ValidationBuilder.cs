@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using FastExpressionCompiler;
 using FluentValidation.DynamicRules.Extensions;
 using FluentValidation;
 using FluentValidation.DynamicRules.Rules;
@@ -29,65 +30,62 @@ public class ValidationBuilder {
     var propType = validatedType.GetPropertyType(prop.PropertyName);
     switch (rule.RuleType) {
       case RuleType.NotEmpty: {
-        method = validatedType.GetValidationMethod(nameof(DefaultValidatorExtensions.NotEmpty), propType);
+        method = validatedType.GetNotEmptyValidator(propType);
         methodCall = Expression.Call(null, method!, ruleFor);
         break;
       }
       case RuleType.Length: {
+        method = validatedType.GetLengthValidator(propType, typeof(int), typeof(int));
+
         var (min, max) = (LengthRule)rule;
-        method = validatedType.GetValidationMethod(nameof(DefaultValidatorExtensions.Length), propType,
-          typeof(int), typeof(int));
-        methodCall = Expression.Call(null, method!, ruleFor, Expression.Constant(min), Expression.Constant(max));
+        var arg01 = Expression.Constant(min);
+        var arg02 = Expression.Constant(max);
+
+        methodCall = Expression.Call(null, method!, ruleFor, arg01, arg02);
+
         break;
       }
       case RuleType.NotEqual: {
-        var comparerGenericType = typeof(IEqualityComparer<>).MakeGenericType(propType);
-        var defaultComparerType = typeof(DefaultEqualityComparer<>).MakeGenericType(propType);
-        var defaultComparer = defaultComparerType.GetDefaultComparerForType();
+        method = validatedType.GetNotEqualValidator(propType);
+
         var value = ((NotEqualRule)rule).Value;
-        method = validatedType.GetValidationMethod(nameof(DefaultValidatorExtensions.NotEqual), propType, propType,
-          comparerGenericType);
-        methodCall = Expression.Call(null, method!, ruleFor, Expression.Constant(Convert.ChangeType(value, propType)),
-          Expression.Constant(defaultComparer));
+        var arg01 = Expression.Constant(Convert.ChangeType(value, propType));
+        var arg02 = Expression.Constant(propType.GetDefaultComparerForType());
+
+        methodCall = Expression.Call(null, method!, ruleFor, arg01, arg02);
         break;
       }
       case RuleType.MustBe: {
-        var mustMethod = validator.GetType().GetPrivateMethodForType(((MustRule)rule).MethodName, propType);
-        var genericTypeForMustMethod = typeof(Func<,>).MakeGenericType(propType, typeof(bool));
-        var arg = Expression.Parameter(propType);
-        var mustMethCall = Expression.Call(Expression.Constant(validator), mustMethod!, arg);
-        var mustCall = Expression.Lambda(mustMethCall, arg);
-        method = validatedType.GetValidationMethod(nameof(DefaultValidatorExtensions.Must), propType, 
-        genericTypeForMustMethod);
-        methodCall = Expression.Call(null, method!, ruleFor, mustCall);
+        var predicateMethod = validator.GetType().GetPrivateMethodForType(((MustRule)rule).MethodName, propType);
+        var predicateFunc = typeof(Func<,>).MakeGenericType(propType, typeof(bool));
+
+        method = validatedType.GetPredicateValidator(propType, predicateFunc);
+
+        var instance = Expression.Constant(validator);
+        var arg01 = Expression.Parameter(propType);
+
+        var predicateCall = Expression.Call(instance, predicateMethod!, arg01);
+        var predicate = Expression.Lambda(predicateCall, arg01);
+
+        methodCall = Expression.Call(null, method!, ruleFor, predicate);
         break;
       }
       default:
-        throw new NotSupportedException($"Rule {rule.RuleType.ToString()} is not supported");
+        throw new NotSupportedException($"Rule {rule.RuleType:S} is not supported");
     }
 
     var builderOptionsGenericType = typeof(IRuleBuilderOptions<,>).MakeGenericType(typeof(T), propType);
     var builderOptionGenericFunc = typeof(Func<>).MakeGenericType(builderOptionsGenericType);
-    var lambdaToCallValidationMethod = Expression.Lambda(builderOptionGenericFunc, methodCall).Compile();
-    var validationFuncResult = lambdaToCallValidationMethod.DynamicInvoke();
+    var validationFuncResult = Expression.Lambda(builderOptionGenericFunc, methodCall).CompileFast().DynamicInvoke();
 
     if (string.IsNullOrEmpty(rule.Message)) return;
 
-    var messageMethodParams = new[] { builderOptionsGenericType, typeof(string) };
-    var withMessageMethod = typeof(DefaultValidatorOptions)
-      .GetStaticMethodForType(nameof(DefaultValidatorOptions.WithMessage), messageMethodParams);
-
+    var withMessageMethod = builderOptionsGenericType.GetWithMessageMethod<T>();
+    var argResult = Expression.Constant(validationFuncResult);
     var theMessage = Expression.Constant(rule.Message);
-    var withMessageGenericMethod = withMessageMethod!.MakeGenericMethod(typeof(T), typeof(string));
-    builderOptionGenericFunc = typeof(Func<>).MakeGenericType(builderOptionsGenericType);
-
-    var messageMethodCall = Expression.Call(null,
-      withMessageGenericMethod!,
-      Expression.Constant(validationFuncResult),
-      theMessage);
+    var messageMethodCall = Expression.Call(null, withMessageMethod!, argResult, theMessage);
 
     var lambdaToCallWithMessageMethod = Expression.Lambda(builderOptionGenericFunc, messageMethodCall);
-
-    lambdaToCallWithMessageMethod.Compile().DynamicInvoke();
+    lambdaToCallWithMessageMethod.CompileFast().DynamicInvoke();
   }
 }
