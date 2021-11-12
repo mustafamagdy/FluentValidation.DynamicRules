@@ -28,6 +28,11 @@ public class ValidationBuilder {
     var propType = validatedType.GetPropertyType(prop.PropertyName);
     
     switch (rule.RuleType) {
+      case RuleType.NotNull: {
+        method = validatedType.GetNotNullValidator(propType);
+        methodCall = Expression.Call(null, method!, ruleFor);
+        break;
+      }
       case RuleType.NotEmpty: {
         method = validatedType.GetNotEmptyValidator(propType);
         methodCall = Expression.Call(null, method!, ruleFor);

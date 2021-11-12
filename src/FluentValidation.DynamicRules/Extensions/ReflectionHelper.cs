@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace FluentValidation.DynamicRules;
+namespace FluentValidation.DynamicRules.Extensions;
 
 public static class ReflectionHelper {
   public static MethodInfo? GetStaticMethodForType(this Type type, string methodName, params Type[] paramTypes) {

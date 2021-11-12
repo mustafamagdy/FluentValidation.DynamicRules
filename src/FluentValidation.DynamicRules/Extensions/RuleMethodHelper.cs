@@ -4,9 +4,12 @@ using System.Linq.Expressions;
 using System.Reflection;
 using FluentValidation.DynamicRules.Validators;
 
-namespace FluentValidation.DynamicRules;
+namespace FluentValidation.DynamicRules.Extensions;
 
 public static class RuleMethodHelper {
+  public static MethodInfo? GetNotNullValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.NotNull), propType);
+
   public static MethodInfo? GetNotEmptyValidator(this Type validatedType, Type propType) =>
     GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.NotEmpty), propType);
 

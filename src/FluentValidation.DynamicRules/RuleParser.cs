@@ -29,6 +29,9 @@ namespace FluentValidation.DynamicRules {
     private PropertyRule ParseRule(XElement node) {
       var message = node.Attribute("message")?.Value ?? "";
       switch (node.Name.LocalName) {
+        case "not-null": {
+          return new NotNullRule(message);
+        }
         case "not-empty": {
           return new NotEmptyRule(message);
         }

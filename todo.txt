@@ -1,1 +1,22 @@
 - NotNull
+- NotEqual 
+  * (another prop)
+  * string, with StringComparer
+- Equal
+  * (another prop)
+  * string, with StringComparer
+- MaxLength
+- MinLength
+- LessThan, LessThanOrEqualTo, GreaterThan, GreaterThanOrEqualTo
+  * value
+  * another prop
+- Must
+  * predicate Func<TProp, bool>
+  * predicate Func<T, TProp, bool>
+- EmailAddress
+- CreditCard
+- Empty
+- Null
+- ExclusiveBetween
+- InclusiveBetween
+- ScalePrecision  
