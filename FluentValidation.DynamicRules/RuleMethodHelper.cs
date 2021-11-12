@@ -43,16 +43,6 @@ public static class RuleMethodHelper {
       : method.MakeGenericMethod(validatedType);
   }
 
-
-  public static Expression GetMessageMethodCall<T>(this AbstractValidator<T> validator) {
-    var mustMethod = validator.GetType().GetPrivateMethodForType(nameof(DefaultValidatorOptions.WithMessage),
-      typeof(string));
-
-    var arg01 = Expression.Parameter(typeof(string));
-    var messageMethodCall = Expression.Call(Expression.Constant(validator), mustMethod!, arg01);
-    return Expression.Lambda(messageMethodCall, arg01);
-  }
-
   public static ConstantExpression GetRuleFor<T>(this AbstractValidator<T> validator, ValidatedProperty prop) {
     var validatedType = typeof(T);
     var pT = Expression.Parameter(validatedType);
@@ -66,5 +56,5 @@ public static class RuleMethodHelper {
     return Expression.Constant(result);
   }
 
-  public static object GetDefaultComparerForType(this Type type) => Activator.CreateInstance(type)!;
+  
 }

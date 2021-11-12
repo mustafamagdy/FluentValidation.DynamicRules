@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using FastExpressionCompiler;
 using FluentValidation.DynamicRules.Extensions;
-using FluentValidation;
 using FluentValidation.DynamicRules.Rules;
 
 namespace FluentValidation.DynamicRules.Validators;
@@ -28,6 +26,7 @@ public class ValidationBuilder {
     MethodCallExpression methodCall;
     var validatedType = typeof(T);
     var propType = validatedType.GetPropertyType(prop.PropertyName);
+    
     switch (rule.RuleType) {
       case RuleType.NotEmpty: {
         method = validatedType.GetNotEmptyValidator(propType);
