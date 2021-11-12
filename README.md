@@ -1,6 +1,10 @@
 # Dynamic Rules for [FluentValidation](https://fluentvalidation.net/)
 
 Add support to dynamically loading validation rules from xml based rule definition
+
+![main](https://github.com/mustafamagdy/FluentValidation.DynamicRules/actions/workflows/build.yml/badge.svg)
+
+
 ## Setup
 ```c# 
     public class CustomerValidator : AbstractDynamicValidator<Customer> {
