@@ -20,6 +20,13 @@ public static class ReflectionHelper {
       BindingFlags.NonPublic | BindingFlags.Instance, paramTypes);
   }
 
+  public static Type GetPropertyType(this Type type, string propName) {
+    return type
+      .GetProperty(propName, BindingFlags.Instance | BindingFlags.IgnoreCase | BindingFlags.Public)?
+      .PropertyType!;
+  }
+
+
   private static MethodInfo? GetMethodForType(this Type type, string methodName, BindingFlags flags,
     params Type[] paramTypes) {
     MethodInfo?[] methods = type
