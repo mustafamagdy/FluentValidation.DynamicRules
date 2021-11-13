@@ -66,12 +66,31 @@ public class ValidationBuilder {
       case RuleType.Length: {
         var method = validatedType.GetLengthValidator(propType);
 
-        var (min, max) = (LengthRule)rule;
+        var (min, max) = (RangeBasedRule)rule;
         var arg01 = Expression.Constant(min);
         var arg02 = Expression.Constant(max);
 
         methodCall = Expression.Call(null, method!, ruleFor, arg01, arg02);
+        break;
+      }
+      case RuleType.ExclusiveBetween: {
+        var method = validatedType.GetExclusiveBetweenValidator(propType);
 
+        var (min, max) = (RangeBasedRule)rule;
+        var arg01 = Expression.Constant(min);
+        var arg02 = Expression.Constant(max);
+
+        methodCall = Expression.Call(null, method!, ruleFor, arg01, arg02);
+        break;
+      }
+      case RuleType.InclusiveBetween: {
+        var method = validatedType.GetInclusiveBetweenValidator(propType);
+
+        var (min, max) = (RangeBasedRule)rule;
+        var arg01 = Expression.Constant(min);
+        var arg02 = Expression.Constant(max);
+
+        methodCall = Expression.Call(null, method!, ruleFor, arg01, arg02);
         break;
       }
 

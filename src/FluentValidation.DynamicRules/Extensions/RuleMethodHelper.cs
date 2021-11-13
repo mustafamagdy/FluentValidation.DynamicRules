@@ -30,6 +30,13 @@ public static class RuleMethodHelper {
   public static MethodInfo? GetLengthValidator(this Type validatedType, Type propType) =>
     GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.Length), propType,
       new[] { typeof(int), typeof(int) });
+  
+  public static MethodInfo? GetExclusiveBetweenValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.ExclusiveBetween), propType,
+      new[] { propType, propType });
+  public static MethodInfo? GetInclusiveBetweenValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.InclusiveBetween), propType,
+      new[] { propType, propType });
 
   public static MethodInfo? GetMinLengthValidator(this Type validatedType, Type propType) =>
     GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.MinimumLength), propType,

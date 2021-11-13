@@ -67,6 +67,16 @@ namespace FluentValidation.DynamicRules {
           var methodName = node.Attribute("call")!.Value;
           return new MustRule(message, methodName);
         }
+        case "exclusive-between": {
+          var min = Convert.ToInt32(node.Attribute("min")!.Value);
+          var max = Convert.ToInt32(node.Attribute("max")!.Value);
+          return new ExclusiveBetweenRule(message, min, max);
+        }
+        case "inclusive-between": {
+          var min = Convert.ToInt32(node.Attribute("min")!.Value);
+          var max = Convert.ToInt32(node.Attribute("max")!.Value);
+          return new InclusiveBetweenRule(message, min, max);
+        }
         default: {
           var value = node.Attribute("value")?.Value;
           var anotherProp = node.Attribute("prop")?.Value;

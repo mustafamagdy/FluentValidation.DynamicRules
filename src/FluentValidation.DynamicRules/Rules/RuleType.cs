@@ -16,5 +16,7 @@ public enum RuleType {
   MaxLength,
   MustBe,
   EmailAddress,
-  CreditCard
+  CreditCard,
+  ExclusiveBetween,
+  InclusiveBetween
 }

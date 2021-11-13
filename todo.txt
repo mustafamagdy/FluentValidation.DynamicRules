@@ -18,8 +18,8 @@
   ✅ method call
   * predicate Func<TProp, bool>
   * predicate Func<T, TProp, bool>
-- EmailAddress
-- CreditCard
+✅ EmailAddress
+✅ CreditCard
 - ExclusiveBetween
 - InclusiveBetween
 - ScalePrecision
