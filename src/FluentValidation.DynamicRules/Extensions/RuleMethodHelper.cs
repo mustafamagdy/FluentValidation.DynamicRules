@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using FluentValidation.DynamicRules.Validators;
+using FluentValidation.Validators;
 
 namespace FluentValidation.DynamicRules.Extensions;
 
@@ -10,12 +11,32 @@ public static class RuleMethodHelper {
   public static MethodInfo? GetNotNullValidator(this Type validatedType, Type propType) =>
     GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.NotNull), propType, Type.EmptyTypes);
 
+  public static MethodInfo? GetNullValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.Null), propType, Type.EmptyTypes);
+
   public static MethodInfo? GetNotEmptyValidator(this Type validatedType, Type propType) =>
     GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.NotEmpty), propType, Type.EmptyTypes);
+
+  public static MethodInfo? GetEmptyValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.Empty), propType, Type.EmptyTypes);
+
+  public static MethodInfo? EmailAddressValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.EmailAddress), propType,
+      new[] { typeof(EmailValidationMode) });
+
+  public static MethodInfo? GetCreditCardValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.CreditCard), propType, Type.EmptyTypes);
 
   public static MethodInfo? GetLengthValidator(this Type validatedType, Type propType) =>
     GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.Length), propType,
       new[] { typeof(int), typeof(int) });
+  
+  public static MethodInfo? GetExclusiveBetweenValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.ExclusiveBetween), propType,
+      new[] { propType, propType });
+  public static MethodInfo? GetInclusiveBetweenValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.InclusiveBetween), propType,
+      new[] { propType, propType });
 
   public static MethodInfo? GetMinLengthValidator(this Type validatedType, Type propType) =>
     GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.MinimumLength), propType,

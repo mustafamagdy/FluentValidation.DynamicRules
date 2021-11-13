@@ -7,6 +7,7 @@ using System.Reflection.Metadata.Ecma335;
 using FastExpressionCompiler;
 using FluentValidation.DynamicRules.Extensions;
 using FluentValidation.DynamicRules.Rules;
+using FluentValidation.Validators;
 
 namespace FluentValidation.DynamicRules.Validators;
 
@@ -36,20 +37,60 @@ public class ValidationBuilder {
         methodCall = Expression.Call(null, method!, ruleFor);
         break;
       }
+      case RuleType.Null: {
+        var method = validatedType.GetNullValidator(propType);
+        methodCall = Expression.Call(null, method!, ruleFor);
+        break;
+      }
       case RuleType.NotEmpty: {
         var method = validatedType.GetNotEmptyValidator(propType);
+        methodCall = Expression.Call(null, method!, ruleFor);
+        break;
+      }
+      case RuleType.Empty: {
+        var method = validatedType.GetEmptyValidator(propType);
+        methodCall = Expression.Call(null, method!, ruleFor);
+        break;
+      }
+      case RuleType.EmailAddress: {
+        var method = validatedType.EmailAddressValidator(propType);
+        var arg01 = Expression.Constant(EmailValidationMode.AspNetCoreCompatible);
+        methodCall = Expression.Call(null, method!, ruleFor, arg01);
+        break;
+      }
+      case RuleType.CreditCard: {
+        var method = validatedType.GetCreditCardValidator(propType);
         methodCall = Expression.Call(null, method!, ruleFor);
         break;
       }
       case RuleType.Length: {
         var method = validatedType.GetLengthValidator(propType);
 
-        var (min, max) = (LengthRule)rule;
+        var (min, max) = (RangeBasedRule)rule;
         var arg01 = Expression.Constant(min);
         var arg02 = Expression.Constant(max);
 
         methodCall = Expression.Call(null, method!, ruleFor, arg01, arg02);
+        break;
+      }
+      case RuleType.ExclusiveBetween: {
+        var method = validatedType.GetExclusiveBetweenValidator(propType);
 
+        var (min, max) = (RangeBasedRule)rule;
+        var arg01 = Expression.Constant(min);
+        var arg02 = Expression.Constant(max);
+
+        methodCall = Expression.Call(null, method!, ruleFor, arg01, arg02);
+        break;
+      }
+      case RuleType.InclusiveBetween: {
+        var method = validatedType.GetInclusiveBetweenValidator(propType);
+
+        var (min, max) = (RangeBasedRule)rule;
+        var arg01 = Expression.Constant(min);
+        var arg02 = Expression.Constant(max);
+
+        methodCall = Expression.Call(null, method!, ruleFor, arg01, arg02);
         break;
       }
 
@@ -102,7 +143,7 @@ public class ValidationBuilder {
     Type validatedType, ConstantExpression ruleFor, ParameterExpression p) {
     var value = ((ValueBasedRules)rule).Value;
     var anotherProp = ((ValueBasedRules)rule).AnotherProp;
-    Expression arg01 = null;
+    Expression? arg01 = null;
     if (value is null && anotherProp is null) {
       throw new ArgumentOutOfRangeException(nameof(value));
     }
@@ -151,12 +192,12 @@ public class ValidationBuilder {
         }
         case 3:
           arg01 = Expression.Constant(Convert.ChangeType(value, propType));
-          methodCall=Expression.Call(null, method, ruleFor, arg01, arg02);
+          methodCall = Expression.Call(null, method, ruleFor, arg01, arg02);
           break;
         default:
           throw new NotSupportedException($"Method {method.Name} has unsupported number of parameters");
       }
-      
+
       return methodCall;
     }
   }

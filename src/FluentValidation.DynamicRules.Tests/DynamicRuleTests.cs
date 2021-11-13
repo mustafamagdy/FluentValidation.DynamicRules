@@ -22,6 +22,40 @@ public class DynamicRuleTests {
   }
 
   [Fact]
+  public void Parser_Parse_String_Null() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""firstName""><null message=""value must be null""/></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.FirstName = "Ali";
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.FirstName), result1.Errors[0].PropertyName);
+    Assert.Equal("value must be null", result1.Errors[0].ErrorMessage);
+    Assert.Equal("NullValidator", result1.Errors[0].ErrorCode);
+  }
+
+  [Fact]
+  public void Parser_Parse_String_Empty() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""firstName""><empty message=""value must be empty""/></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.FirstName = "Ali";
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.FirstName), result1.Errors[0].PropertyName);
+    Assert.Equal("value must be empty", result1.Errors[0].ErrorMessage);
+    Assert.Equal("EmptyValidator", result1.Errors[0].ErrorCode);
+  }
+
+  [Fact]
   public void Parser_Parse_String_NotEmpty() {
     var parser = new RuleParser();
     var xml = @"<rules><rule-for prop=""firstName""><not-empty message=""value cannot be empty""/></rule-for></rules>";
@@ -36,6 +70,43 @@ public class DynamicRuleTests {
     Assert.Equal("value cannot be empty", result1.Errors[0].ErrorMessage);
     Assert.Equal("NotEmptyValidator", result1.Errors[0].ErrorCode);
   }
+
+  [Fact]
+  public void Parser_Parse_Email() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""email""><email /></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.Email = "test";
+
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.Email), result1.Errors[0].PropertyName);
+    Assert.Equal("'Email' is not a valid email address.", result1.Errors[0].ErrorMessage);
+    Assert.Equal("EmailValidator", result1.Errors[0].ErrorCode);
+  }
+
+  [Fact]
+  public void Parser_Parse_CreditCard() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""creditCard""><credit-card /></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.CreditCard = "1234";
+
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.CreditCard), result1.Errors[0].PropertyName);
+    Assert.Equal("'Credit Card' is not a valid credit card number.", result1.Errors[0].ErrorMessage);
+    Assert.Equal("CreditCardValidator", result1.Errors[0].ErrorCode);
+  }
+
 
   [Fact]
   public void Parser_Parse_String_NotEmptyWithInt() {
@@ -121,7 +192,7 @@ public class DynamicRuleTests {
     Assert.Equal("'Age' must be equal to '0'.", result1.Errors[0].ErrorMessage);
     Assert.Equal("EqualValidator", result1.Errors[0].ErrorCode);
   }
-  
+
   [Fact]
   public void Parser_Parse_String_NotEqualAnotherProp() {
     var parser = new RuleParser();
@@ -161,6 +232,51 @@ public class DynamicRuleTests {
       result1.Errors[0].ErrorMessage);
     Assert.Equal("LengthValidator", result1.Errors[0].ErrorCode);
   }
+  
+  [Fact]
+  public void Parser_Parse_String_ExclusiveBetween() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""age""><exclusive-between min=""10"" max=""20"" /></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.Age = 15;
+    var result1 = validator.Validate(person1);
+    Assert.True(result1.IsValid);
+    
+    person1.Age = 20;
+    result1 = validator.Validate(person1);
+
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.Age), result1.Errors[0].PropertyName);
+    Assert.Equal("'Age' must be between 10 and 20 (exclusive). You entered 20.",
+      result1.Errors[0].ErrorMessage);
+    Assert.Equal("ExclusiveBetweenValidator", result1.Errors[0].ErrorCode);
+  }
+  [Fact]
+  public void Parser_Parse_String_InclusiveBetween() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""age""><inclusive-between min=""10"" max=""20"" /></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.Age = 20;
+    var result1 = validator.Validate(person1);
+    Assert.True(result1.IsValid);
+    
+    person1.Age = 21;
+    result1 = validator.Validate(person1);
+
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.Age), result1.Errors[0].PropertyName);
+    Assert.Equal("'Age' must be between 10 and 20. You entered 21.",
+      result1.Errors[0].ErrorMessage);
+    Assert.Equal("InclusiveBetweenValidator", result1.Errors[0].ErrorCode);
+  }
 
   [Fact]
   public void Parser_Parse_String_LessThan() {
@@ -178,7 +294,7 @@ public class DynamicRuleTests {
     Assert.Equal("'Age' must be less than '100'.", result1.Errors[0].ErrorMessage);
     Assert.Equal("LessThanValidator", result1.Errors[0].ErrorCode);
   }
-  
+
   [Fact]
   public void Parser_Parse_String_LessThanOrEqual() {
     var parser = new RuleParser();
@@ -195,7 +311,7 @@ public class DynamicRuleTests {
     Assert.Equal("'Age' must be less than or equal to '100'.", result1.Errors[0].ErrorMessage);
     Assert.Equal("LessThanOrEqualValidator", result1.Errors[0].ErrorCode);
   }
-  
+
   [Fact]
   public void Parser_Parse_String_LessThanOrEqualWithAnotherProperty() {
     var parser = new RuleParser();
@@ -213,8 +329,8 @@ public class DynamicRuleTests {
     Assert.Equal("'Age' must be less than or equal to '100'.", result1.Errors[0].ErrorMessage);
     Assert.Equal("LessThanOrEqualValidator", result1.Errors[0].ErrorCode);
   }
-  
-  
+
+
   [Fact]
   public void Parser_Parse_String_LengthWithFixedValue() {
     var parser = new RuleParser();
@@ -237,7 +353,7 @@ public class DynamicRuleTests {
     Assert.Equal("LengthValidator", result1.Errors[0].ErrorCode);
   }
 
-  
+
   [Fact]
   public void Parser_Parse_String_MaxLength() {
     var parser = new RuleParser();
@@ -259,7 +375,7 @@ public class DynamicRuleTests {
       result1.Errors[0].ErrorMessage);
     Assert.Equal("MaximumLengthValidator", result1.Errors[0].ErrorCode);
   }
-  
+
   [Fact]
   public void Parser_Parse_String_MinLength() {
     var parser = new RuleParser();
@@ -281,12 +397,14 @@ public class DynamicRuleTests {
       result1.Errors[0].ErrorMessage);
     Assert.Equal("MinimumLengthValidator", result1.Errors[0].ErrorCode);
   }
-  
+
   public class Person {
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public int Age { get; set; }
     public int AnotherAge { get; set; }
+    public string CreditCard { get; set; }
+    public string Email { get; set; }
   }
 
   public class PersonValidator : AbstractDynamicValidator<Person> {

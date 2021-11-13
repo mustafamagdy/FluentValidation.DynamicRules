@@ -32,8 +32,20 @@ namespace FluentValidation.DynamicRules {
         case "not-null": {
           return new NotNullRule(message);
         }
+        case "null": {
+          return new NullRule(message);
+        }
         case "not-empty": {
           return new NotEmptyRule(message);
+        }
+        case "empty": {
+          return new EmptyRule(message);
+        }
+        case "email": {
+          return new EmailAddressRule(message);
+        }
+        case "credit-card": {
+          return new CreditCardRule(message);
         }
         case "string-len": {
           if (node.Attribute("value") == null && node.Attribute("min") == null && node.Attribute("max") == null)
@@ -54,6 +66,16 @@ namespace FluentValidation.DynamicRules {
         case "must-be": {
           var methodName = node.Attribute("call")!.Value;
           return new MustRule(message, methodName);
+        }
+        case "exclusive-between": {
+          var min = Convert.ToInt32(node.Attribute("min")!.Value);
+          var max = Convert.ToInt32(node.Attribute("max")!.Value);
+          return new ExclusiveBetweenRule(message, min, max);
+        }
+        case "inclusive-between": {
+          var min = Convert.ToInt32(node.Attribute("min")!.Value);
+          var max = Convert.ToInt32(node.Attribute("max")!.Value);
+          return new InclusiveBetweenRule(message, min, max);
         }
         default: {
           var value = node.Attribute("value")?.Value;

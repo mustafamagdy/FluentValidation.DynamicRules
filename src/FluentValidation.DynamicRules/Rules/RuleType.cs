@@ -1,6 +1,8 @@
 namespace FluentValidation.DynamicRules.Rules;
 
 public enum RuleType {
+  Empty,
+  Null,
   NotNull,
   NotEmpty,
   Equal,
@@ -13,4 +15,8 @@ public enum RuleType {
   MinLength,
   MaxLength,
   MustBe,
+  EmailAddress,
+  CreditCard,
+  ExclusiveBetween,
+  InclusiveBetween
 }
