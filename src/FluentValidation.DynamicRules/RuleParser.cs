@@ -20,10 +20,10 @@ namespace FluentValidation.DynamicRules {
         }).ToArray();
 
       var validatedProperties = ruleSet.Select(a => {
-        var validatedProperty = new ValidatedProperty(a.Prop,a.Rules.Select(ParseRule));
+        var validatedProperty = new ValidatedProperty(a.Prop, a.Rules.Select(ParseRule));
         return validatedProperty;
       });
-      return  new ValidationBuilder(validatedProperties);
+      return new ValidationBuilder(validatedProperties);
     }
 
     private PropertyRule ParseRule(XElement node) {
@@ -37,7 +37,8 @@ namespace FluentValidation.DynamicRules {
         }
         case "string-len": {
           if (node.Attribute("value") == null && node.Attribute("min") == null && node.Attribute("max") == null)
-            throw new ArgumentException("No value provided for length, either value, or min and max should be provided.");
+            throw new ArgumentException(
+              "No value provided for length, either value, or min and max should be provided.");
 
           var fixedLength = node.Attribute("value");
           int min, max;
@@ -50,10 +51,21 @@ namespace FluentValidation.DynamicRules {
 
           return new LengthRule(message, min, max);
         }
-        case "not-equal": {
+        case "not-equal":
+        case "less-than":
+        case "less-than-equal":
+        case "greater-than":
+        case "greater-than-equal": {
           var value = node.Attribute("value")?.Value;
           var anotherProp = node.Attribute("prop")?.Value;
-          return new NotEqualRule(message, value, anotherProp);
+          return node.Name.LocalName switch {
+            "not-equal" => new NotEqualRule(message, value, anotherProp),
+            "less-than" => new LessThanRule(message, value, anotherProp),
+            "less-than-equal" => new LessThanOrEqualRule(message, value, anotherProp),
+            "greater-than" => new GreaterThanRule(message, value, anotherProp),
+            "greater-than-equal" => new GreaterThanOrEqualRule(message, value, anotherProp),
+            _ => throw new Exception("Not gonna happen")
+          };
         }
         case "must-be": {
           var methodName = node.Attribute("call")!.Value;
