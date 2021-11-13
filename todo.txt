@@ -3,6 +3,7 @@
 - NotEqual 
   ✅ with adjacent property
   * string, with StringComparer
+✅ Length
 - Equal
   * with adjacent property
   * string, with StringComparer
@@ -12,6 +13,7 @@
   ✅ value
   ✅ with adjacent property
 - Must
+  ✅ method call
   * predicate Func<TProp, bool>
   * predicate Func<T, TProp, bool>
 - EmailAddress
