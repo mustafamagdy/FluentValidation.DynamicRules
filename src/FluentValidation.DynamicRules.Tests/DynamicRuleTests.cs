@@ -37,7 +37,7 @@ public class DynamicRuleTests {
     Assert.Equal("value must be null", result1.Errors[0].ErrorMessage);
     Assert.Equal("NullValidator", result1.Errors[0].ErrorCode);
   }
-  
+
   [Fact]
   public void Parser_Parse_String_Empty() {
     var parser = new RuleParser();
@@ -70,6 +70,43 @@ public class DynamicRuleTests {
     Assert.Equal("value cannot be empty", result1.Errors[0].ErrorMessage);
     Assert.Equal("NotEmptyValidator", result1.Errors[0].ErrorCode);
   }
+
+  [Fact]
+  public void Parser_Parse_Email() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""email""><email /></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.Email = "test";
+
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.Email), result1.Errors[0].PropertyName);
+    Assert.Equal("'Email' is not a valid email address.", result1.Errors[0].ErrorMessage);
+    Assert.Equal("EmailValidator", result1.Errors[0].ErrorCode);
+  }
+
+  [Fact]
+  public void Parser_Parse_CreditCard() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""creditCard""><credit-card /></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.CreditCard = "1234";
+
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.CreditCard), result1.Errors[0].PropertyName);
+    Assert.Equal("'Credit Card' is not a valid credit card number.", result1.Errors[0].ErrorMessage);
+    Assert.Equal("CreditCardValidator", result1.Errors[0].ErrorCode);
+  }
+
 
   [Fact]
   public void Parser_Parse_String_NotEmptyWithInt() {
@@ -321,6 +358,8 @@ public class DynamicRuleTests {
     public string? LastName { get; set; }
     public int Age { get; set; }
     public int AnotherAge { get; set; }
+    public string CreditCard { get; set; }
+    public string Email { get; set; }
   }
 
   public class PersonValidator : AbstractDynamicValidator<Person> {

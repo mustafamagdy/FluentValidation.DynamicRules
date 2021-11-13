@@ -7,6 +7,7 @@ using System.Reflection.Metadata.Ecma335;
 using FastExpressionCompiler;
 using FluentValidation.DynamicRules.Extensions;
 using FluentValidation.DynamicRules.Rules;
+using FluentValidation.Validators;
 
 namespace FluentValidation.DynamicRules.Validators;
 
@@ -48,6 +49,17 @@ public class ValidationBuilder {
       }
       case RuleType.Empty: {
         var method = validatedType.GetEmptyValidator(propType);
+        methodCall = Expression.Call(null, method!, ruleFor);
+        break;
+      }
+      case RuleType.EmailAddress: {
+        var method = validatedType.EmailAddressValidator(propType);
+        var arg01 = Expression.Constant(EmailValidationMode.AspNetCoreCompatible);
+        methodCall = Expression.Call(null, method!, ruleFor, arg01);
+        break;
+      }
+      case RuleType.CreditCard: {
+        var method = validatedType.GetCreditCardValidator(propType);
         methodCall = Expression.Call(null, method!, ruleFor);
         break;
       }

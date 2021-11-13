@@ -41,6 +41,12 @@ namespace FluentValidation.DynamicRules {
         case "empty": {
           return new EmptyRule(message);
         }
+        case "email": {
+          return new EmailAddressRule(message);
+        }
+        case "credit-card": {
+          return new CreditCardRule(message);
+        }
         case "string-len": {
           if (node.Attribute("value") == null && node.Attribute("min") == null && node.Attribute("max") == null)
             throw new ArgumentException(

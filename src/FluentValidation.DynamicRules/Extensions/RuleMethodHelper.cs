@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using FluentValidation.DynamicRules.Validators;
+using FluentValidation.Validators;
 
 namespace FluentValidation.DynamicRules.Extensions;
 
@@ -18,6 +19,13 @@ public static class RuleMethodHelper {
 
   public static MethodInfo? GetEmptyValidator(this Type validatedType, Type propType) =>
     GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.Empty), propType, Type.EmptyTypes);
+
+  public static MethodInfo? EmailAddressValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.EmailAddress), propType,
+      new[] { typeof(EmailValidationMode) });
+
+  public static MethodInfo? GetCreditCardValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.CreditCard), propType, Type.EmptyTypes);
 
   public static MethodInfo? GetLengthValidator(this Type validatedType, Type propType) =>
     GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.Length), propType,

@@ -15,5 +15,6 @@ public enum RuleType {
   MinLength,
   MaxLength,
   MustBe,
-  
+  EmailAddress,
+  CreditCard
 }
