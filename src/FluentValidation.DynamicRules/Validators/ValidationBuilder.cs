@@ -36,8 +36,18 @@ public class ValidationBuilder {
         methodCall = Expression.Call(null, method!, ruleFor);
         break;
       }
+      case RuleType.Null: {
+        var method = validatedType.GetNullValidator(propType);
+        methodCall = Expression.Call(null, method!, ruleFor);
+        break;
+      }
       case RuleType.NotEmpty: {
         var method = validatedType.GetNotEmptyValidator(propType);
+        methodCall = Expression.Call(null, method!, ruleFor);
+        break;
+      }
+      case RuleType.Empty: {
+        var method = validatedType.GetEmptyValidator(propType);
         methodCall = Expression.Call(null, method!, ruleFor);
         break;
       }
@@ -102,7 +112,7 @@ public class ValidationBuilder {
     Type validatedType, ConstantExpression ruleFor, ParameterExpression p) {
     var value = ((ValueBasedRules)rule).Value;
     var anotherProp = ((ValueBasedRules)rule).AnotherProp;
-    Expression arg01 = null;
+    Expression? arg01 = null;
     if (value is null && anotherProp is null) {
       throw new ArgumentOutOfRangeException(nameof(value));
     }
@@ -151,12 +161,12 @@ public class ValidationBuilder {
         }
         case 3:
           arg01 = Expression.Constant(Convert.ChangeType(value, propType));
-          methodCall=Expression.Call(null, method, ruleFor, arg01, arg02);
+          methodCall = Expression.Call(null, method, ruleFor, arg01, arg02);
           break;
         default:
           throw new NotSupportedException($"Method {method.Name} has unsupported number of parameters");
       }
-      
+
       return methodCall;
     }
   }

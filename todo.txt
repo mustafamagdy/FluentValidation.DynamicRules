@@ -3,8 +3,8 @@
 - NotEqual 
   ✅ with adjacent property
   * string, with StringComparer
-- Empty
-- Null
+✅ Empty
+✅ Null
 ✅ Length
 - Equal
   ✅ with adjacent property
@@ -22,4 +22,6 @@
 - CreditCard
 - ExclusiveBetween
 - InclusiveBetween
-- ScalePrecision  
+- ScalePrecision
+- Custom
+- Async*

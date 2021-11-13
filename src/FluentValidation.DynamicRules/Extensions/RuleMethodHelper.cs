@@ -10,8 +10,14 @@ public static class RuleMethodHelper {
   public static MethodInfo? GetNotNullValidator(this Type validatedType, Type propType) =>
     GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.NotNull), propType, Type.EmptyTypes);
 
+  public static MethodInfo? GetNullValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.Null), propType, Type.EmptyTypes);
+
   public static MethodInfo? GetNotEmptyValidator(this Type validatedType, Type propType) =>
     GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.NotEmpty), propType, Type.EmptyTypes);
+
+  public static MethodInfo? GetEmptyValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.Empty), propType, Type.EmptyTypes);
 
   public static MethodInfo? GetLengthValidator(this Type validatedType, Type propType) =>
     GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.Length), propType,

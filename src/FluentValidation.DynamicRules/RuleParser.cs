@@ -32,8 +32,14 @@ namespace FluentValidation.DynamicRules {
         case "not-null": {
           return new NotNullRule(message);
         }
+        case "null": {
+          return new NullRule(message);
+        }
         case "not-empty": {
           return new NotEmptyRule(message);
+        }
+        case "empty": {
+          return new EmptyRule(message);
         }
         case "string-len": {
           if (node.Attribute("value") == null && node.Attribute("min") == null && node.Attribute("max") == null)
