@@ -29,6 +29,9 @@ namespace FluentValidation.DynamicRules {
     private PropertyRule ParseRule(XElement node) {
       var message = node.Attribute("message")?.Value ?? "";
       switch (node.Name.LocalName) {
+        case "not-null": {
+          return new NotNullRule(message);
+        }
         case "not-empty": {
           return new NotEmptyRule(message);
         }
@@ -48,9 +51,9 @@ namespace FluentValidation.DynamicRules {
           return new LengthRule(message, min, max);
         }
         case "not-equal": {
-          var value = node.Attribute("value")!.Value;
-          var when = node.Attribute("when-prop")?.Value;
-          return new NotEqualRule(message, value, when);
+          var value = node.Attribute("value")?.Value;
+          var anotherProp = node.Attribute("prop")?.Value;
+          return new NotEqualRule(message, value, anotherProp);
         }
         case "must-be": {
           var methodName = node.Attribute("call")!.Value;

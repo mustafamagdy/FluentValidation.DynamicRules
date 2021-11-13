@@ -5,6 +5,23 @@ namespace FluentValidation.DynamicRules.Tests;
 
 public class DynamicRuleTests {
   [Fact]
+  public void Parser_Parse_String_NotNull() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""firstName""><not-null message=""value cannot be null""/></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.FirstName = null;
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.FirstName), result1.Errors[0].PropertyName);
+    Assert.Equal("value cannot be null", result1.Errors[0].ErrorMessage);
+    Assert.Equal("NotNullValidator", result1.Errors[0].ErrorCode);
+  }
+
+  [Fact]
   public void Parser_Parse_String_NotEmpty() {
     var parser = new RuleParser();
     var xml = @"<rules><rule-for prop=""firstName""><not-empty message=""value cannot be empty""/></rule-for></rules>";
@@ -19,7 +36,7 @@ public class DynamicRuleTests {
     Assert.Equal("value cannot be empty", result1.Errors[0].ErrorMessage);
     Assert.Equal("NotEmptyValidator", result1.Errors[0].ErrorCode);
   }
-  
+
   [Fact]
   public void Parser_Parse_String_NotEmptyWithInt() {
     var parser = new RuleParser();
@@ -35,7 +52,7 @@ public class DynamicRuleTests {
     Assert.Equal("'Age' must not be empty.", result1.Errors[0].ErrorMessage);
     Assert.Equal("NotEmptyValidator", result1.Errors[0].ErrorCode);
   }
-  
+
   [Fact]
   public void Parser_Parse_String_NotEmptyWithIntWithCustomMessage() {
     var parser = new RuleParser();
@@ -51,8 +68,8 @@ public class DynamicRuleTests {
     Assert.Equal("value cannot be zero", result1.Errors[0].ErrorMessage);
     Assert.Equal("NotEmptyValidator", result1.Errors[0].ErrorCode);
   }
-  
-  
+
+
   [Fact]
   public void Parser_Parse_String_MustBe() {
     var parser = new RuleParser();
@@ -85,6 +102,24 @@ public class DynamicRuleTests {
     Assert.NotEmpty(result1.Errors);
     Assert.Equal(nameof(Person.Age), result1.Errors[0].PropertyName);
     Assert.Equal("'Age' must not be equal to '0'.", result1.Errors[0].ErrorMessage);
+    Assert.Equal("NotEqualValidator", result1.Errors[0].ErrorCode);
+  }
+
+  [Fact]
+  public void Parser_Parse_String_NotEqualAnotherProp() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""firstName""><not-equal prop=""lastName""/></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.FirstName = "Ali";
+    person1.LastName = "Ali";
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.FirstName), result1.Errors[0].PropertyName);
+    Assert.Equal("'First Name' must not be equal to 'Ali'.", result1.Errors[0].ErrorMessage);
     Assert.Equal("NotEqualValidator", result1.Errors[0].ErrorCode);
   }
 
@@ -133,12 +168,17 @@ public class DynamicRuleTests {
   }
 
   public class Person {
-    public string FirstName { get; set; }
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
     public int Age { get; set; }
   }
 
   public class PersonValidator : AbstractDynamicValidator<Person> {
-    public PersonValidator(ValidationBuilder builder) : base(builder) { }
+    public PersonValidator(ValidationBuilder builder) : base(builder) {
+      //
+      // RuleFor(a => a.FirstName).NotEqual(a => a.LastName);
+    }
+
     private bool MustBeAhmed(string value) => !string.IsNullOrEmpty(value) && value.ToLower() == "ahmed";
   }
 }

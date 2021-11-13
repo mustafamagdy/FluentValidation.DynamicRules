@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace FluentValidation.DynamicRules;
+namespace FluentValidation.DynamicRules.Extensions;
 
 public static class ReflectionHelper {
   public static MethodInfo? GetStaticMethodForType(this Type type, string methodName, params Type[] paramTypes) {
@@ -42,7 +42,7 @@ public static class ReflectionHelper {
         .Select(t => t.IsGenericType ? t.GetGenericTypeDefinition() : t)
         .ToArray();
 
-      var found = @params.Where((t, i) => FilterParams(t, i, paramTypes)).Any();
+      var found = @params.Select((t, i) => FilterParams(t, paramTypes[i])).All(a => a);
       if (!found) continue;
 
       foundMethod = m;
@@ -52,10 +52,12 @@ public static class ReflectionHelper {
     return foundMethod;
   }
 
-  private static bool FilterParams(Type t, int i, Type[] paramTypes) {
-    return (t.IsAssignableFrom(paramTypes[i])
-            || (t.IsGenericParameter && paramTypes[i].IsGenericParameter)
-            || (t.IsGenericTypeDefinition &&
-                t.GetGenericTypeDefinition().IsAssignableFrom(paramTypes[i].GetGenericTypeDefinition())));
+  private static bool FilterParams(Type t, Type paramType) {
+    return (t.IsAssignableFrom(paramType)
+            || (t.IsGenericParameter && !paramType.IsGenericType
+                                     && (t.GetGenericParameterConstraints().Length == 0
+                                         || t.GetGenericParameterConstraints().Contains(paramType)))
+            || (t.IsGenericType && paramType.IsGenericType &&
+                t.GetGenericTypeDefinition().IsAssignableFrom(paramType.GetGenericTypeDefinition())));
   }
 }

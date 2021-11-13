@@ -21,13 +21,19 @@ public class ValidationBuilder {
   }
 
   private void BuildRule<T>(PropertyRule rule, ValidatedProperty prop, AbstractValidator<T> validator) {
-    var ruleFor = validator.GetRuleFor(prop);
+    var p = Expression.Parameter(typeof(T));
+    var ruleFor = validator.GetRuleFor(p, prop);
     MethodInfo? method;
     MethodCallExpression methodCall;
     var validatedType = typeof(T);
     var propType = validatedType.GetPropertyType(prop.PropertyName);
-    
+
     switch (rule.RuleType) {
+      case RuleType.NotNull: {
+        method = validatedType.GetNotNullValidator(propType);
+        methodCall = Expression.Call(null, method!, ruleFor);
+        break;
+      }
       case RuleType.NotEmpty: {
         method = validatedType.GetNotEmptyValidator(propType);
         methodCall = Expression.Call(null, method!, ruleFor);
@@ -45,13 +51,29 @@ public class ValidationBuilder {
         break;
       }
       case RuleType.NotEqual: {
-        method = validatedType.GetNotEqualValidator(propType);
 
         var value = ((NotEqualRule)rule).Value;
-        var arg01 = Expression.Constant(Convert.ChangeType(value, propType));
+        var anotherProp = ((NotEqualRule)rule).AnotherProp;
+        Expression arg01 = null;
+        if (value is null && anotherProp is null) {
+          throw new ArgumentOutOfRangeException(nameof(value));
+        }
+
         var arg02 = Expression.Constant(propType.GetDefaultComparerForType());
 
-        methodCall = Expression.Call(null, method!, ruleFor, arg01, arg02);
+        if (value is null) {
+          var theOtherProp = validatedType.GetProperty(anotherProp!, BindingFlags.Instance | BindingFlags.Public
+            | BindingFlags.IgnoreCase);
+          var memberExpression = Expression.MakeMemberAccess(p, theOtherProp!);
+          method = validatedType.GetNotEqualValidatorWithAnotherProperty(propType);
+          arg01 = Expression.Lambda(memberExpression, p);
+          methodCall = Expression.Call(null, method!, ruleFor, arg01, arg02);
+        } else {
+          arg01 = Expression.Constant(Convert.ChangeType(value, propType));
+          method = validatedType.GetNotEqualValidator(propType);
+          methodCall = Expression.Call(null, method!, ruleFor, arg01, arg02);
+        }
+
         break;
       }
       case RuleType.MustBe: {
