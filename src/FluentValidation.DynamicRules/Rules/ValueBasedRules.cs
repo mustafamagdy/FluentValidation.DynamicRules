@@ -1,9 +1,8 @@
 namespace FluentValidation.DynamicRules.Rules;
 
 public abstract class ValueBasedRules : PropertyRule {
-  protected ValueBasedRules(string message, object? value, string? anotherProp = null) : base(RuleType
-      .GreaterThanOrEqual, 
-    message) {
+  protected ValueBasedRules(RuleType rule, string message, object? value, string? anotherProp = null)
+    : base(rule, message) {
     Value = value;
     AnotherProp = anotherProp;
   }

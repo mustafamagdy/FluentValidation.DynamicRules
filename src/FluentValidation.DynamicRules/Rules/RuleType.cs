@@ -3,11 +3,14 @@ namespace FluentValidation.DynamicRules.Rules;
 public enum RuleType {
   NotNull,
   NotEmpty,
-  Length,
+  Equal,
   NotEqual,
-  MustBe,
   LessThan,
   LessThanOrEqual,
   GreaterThan,
-  GreaterThanOrEqual
+  GreaterThanOrEqual,
+  Length,
+  MinLength,
+  MaxLength,
+  MustBe,
 }

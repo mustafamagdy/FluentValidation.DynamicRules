@@ -13,12 +13,29 @@ public static class RuleMethodHelper {
   public static MethodInfo? GetNotEmptyValidator(this Type validatedType, Type propType) =>
     GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.NotEmpty), propType, Type.EmptyTypes);
 
-  public static MethodInfo? GetLengthValidator(this Type validatedType, Type propType, params Type[] paramTypes) =>
-    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.Length), propType, paramTypes);
+  public static MethodInfo? GetLengthValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.Length), propType,
+      new[] { typeof(int), typeof(int) });
+
+  public static MethodInfo? GetMinLengthValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.MinimumLength), propType,
+      new[] { typeof(int) });
+
+  public static MethodInfo? GetMaxLengthValidator(this Type validatedType, Type propType) =>
+    GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.MaximumLength), propType,
+      new[] { typeof(int) });
 
   public static MethodInfo? GetNotEqualValidator(this Type validatedType, Type propType) {
     var comparerGenericType = typeof(IEqualityComparer<>).MakeGenericType(propType);
     return GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.NotEqual), propType, new[] {
+      propType,
+      comparerGenericType
+    });
+  }
+
+  public static MethodInfo? GetEqualValidator(this Type validatedType, Type propType) {
+    var comparerGenericType = typeof(IEqualityComparer<>).MakeGenericType(propType);
+    return GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.Equal), propType, new[] {
       propType,
       comparerGenericType
     });
@@ -53,6 +70,16 @@ public static class RuleMethodHelper {
     var otherPropExp = typeof(Expression<>).MakeGenericType(func);
     var comparerGenericType = typeof(IEqualityComparer<>).MakeGenericType(propType);
     return GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.NotEqual), propType, new[] {
+      otherPropExp,
+      comparerGenericType
+    });
+  }
+
+  public static MethodInfo? GetEqualValidatorWithAnotherProperty(this Type validatedType, Type propType) {
+    var func = typeof(Func<,>).MakeGenericType(validatedType, propType);
+    var otherPropExp = typeof(Expression<>).MakeGenericType(func);
+    var comparerGenericType = typeof(IEqualityComparer<>).MakeGenericType(propType);
+    return GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.Equal), propType, new[] {
       otherPropExp,
       comparerGenericType
     });
