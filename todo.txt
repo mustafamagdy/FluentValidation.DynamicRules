@@ -3,13 +3,15 @@
 - NotEqual 
   ✅ with adjacent property
   * string, with StringComparer
+- Empty
+- Null
 ✅ Length
 - Equal
-  * with adjacent property
+  ✅ with adjacent property
   * string, with StringComparer
-- MaxLength
-- MinLength
-- LessThan, LessThanOrEqualTo, GreaterThan, GreaterThanOrEqualTo
+✅ MaxLength
+✅ MinLength
+✅ LessThan, LessThanOrEqualTo, GreaterThan, GreaterThanOrEqualTo
   ✅ value
   ✅ with adjacent property
 - Must
@@ -18,8 +20,6 @@
   * predicate Func<T, TProp, bool>
 - EmailAddress
 - CreditCard
-- Empty
-- Null
 - ExclusiveBetween
 - InclusiveBetween
 - ScalePrecision  
