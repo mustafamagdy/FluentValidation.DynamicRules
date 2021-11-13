@@ -106,6 +106,24 @@ public class DynamicRuleTests {
   }
 
   [Fact]
+  public void Parser_Parse_String_NotEqualAnotherProp() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""firstName""><not-equal prop=""lastName""/></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.FirstName = "Ali";
+    person1.LastName = "Ali";
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.FirstName), result1.Errors[0].PropertyName);
+    Assert.Equal("'First Name' must not be equal to 'Ali'.", result1.Errors[0].ErrorMessage);
+    Assert.Equal("NotEqualValidator", result1.Errors[0].ErrorCode);
+  }
+
+  [Fact]
   public void Parser_Parse_String_LengthWithRange() {
     var parser = new RuleParser();
     var xml = @"<rules><rule-for prop=""firstName""><string-len min=""10"" max=""20"" /></rule-for></rules>";
@@ -151,11 +169,16 @@ public class DynamicRuleTests {
 
   public class Person {
     public string? FirstName { get; set; }
+    public string? LastName { get; set; }
     public int Age { get; set; }
   }
 
   public class PersonValidator : AbstractDynamicValidator<Person> {
-    public PersonValidator(ValidationBuilder builder) : base(builder) { }
+    public PersonValidator(ValidationBuilder builder) : base(builder) {
+      //
+      // RuleFor(a => a.FirstName).NotEqual(a => a.LastName);
+    }
+
     private bool MustBeAhmed(string value) => !string.IsNullOrEmpty(value) && value.ToLower() == "ahmed";
   }
 }

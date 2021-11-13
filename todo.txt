@@ -1,4 +1,4 @@
-- NotNull
+✅ NotNull
 - NotEqual 
   * (another prop)
   * string, with StringComparer
