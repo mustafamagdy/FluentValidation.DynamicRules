@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Metadata.Ecma335;
 using FastExpressionCompiler;
 using FluentValidation.DynamicRules.Extensions;
 using FluentValidation.DynamicRules.Rules;
@@ -23,24 +24,24 @@ public class ValidationBuilder {
   private void BuildRule<T>(PropertyRule rule, ValidatedProperty prop, AbstractValidator<T> validator) {
     var p = Expression.Parameter(typeof(T));
     var ruleFor = validator.GetRuleFor(p, prop);
-    MethodInfo? method;
+    // MethodInfo? method;
     MethodCallExpression methodCall;
     var validatedType = typeof(T);
     var propType = validatedType.GetPropertyType(prop.PropertyName);
 
     switch (rule.RuleType) {
       case RuleType.NotNull: {
-        method = validatedType.GetNotNullValidator(propType);
+        var method = validatedType.GetNotNullValidator(propType);
         methodCall = Expression.Call(null, method!, ruleFor);
         break;
       }
       case RuleType.NotEmpty: {
-        method = validatedType.GetNotEmptyValidator(propType);
+        var method = validatedType.GetNotEmptyValidator(propType);
         methodCall = Expression.Call(null, method!, ruleFor);
         break;
       }
       case RuleType.Length: {
-        method = validatedType.GetLengthValidator(propType, typeof(int), typeof(int));
+        var method = validatedType.GetLengthValidator(propType, typeof(int), typeof(int));
 
         var (min, max) = (LengthRule)rule;
         var arg01 = Expression.Constant(min);
@@ -50,37 +51,19 @@ public class ValidationBuilder {
 
         break;
       }
-      case RuleType.NotEqual: {
-
-        var value = ((NotEqualRule)rule).Value;
-        var anotherProp = ((NotEqualRule)rule).AnotherProp;
-        Expression arg01 = null;
-        if (value is null && anotherProp is null) {
-          throw new ArgumentOutOfRangeException(nameof(value));
-        }
-
-        var arg02 = Expression.Constant(propType.GetDefaultComparerForType());
-
-        if (value is null) {
-          var theOtherProp = validatedType.GetProperty(anotherProp!, BindingFlags.Instance | BindingFlags.Public
-            | BindingFlags.IgnoreCase);
-          var memberExpression = Expression.MakeMemberAccess(p, theOtherProp!);
-          method = validatedType.GetNotEqualValidatorWithAnotherProperty(propType);
-          arg01 = Expression.Lambda(memberExpression, p);
-          methodCall = Expression.Call(null, method!, ruleFor, arg01, arg02);
-        } else {
-          arg01 = Expression.Constant(Convert.ChangeType(value, propType));
-          method = validatedType.GetNotEqualValidator(propType);
-          methodCall = Expression.Call(null, method!, ruleFor, arg01, arg02);
-        }
-
+      case RuleType.NotEqual:
+      case RuleType.LessThan:
+      case RuleType.LessThanOrEqual:
+      case RuleType.GreaterThan:
+      case RuleType.GreaterThanOrEqual: {
+        methodCall = BuildForValueBasedRules(rule, propType, validatedType, ruleFor, p);
         break;
       }
       case RuleType.MustBe: {
         var predicateMethod = validator.GetType().GetPrivateMethodForType(((MustRule)rule).MethodName, propType);
         var predicateFunc = typeof(Func<,>).MakeGenericType(propType, typeof(bool));
 
-        method = validatedType.GetPredicateValidator(propType, predicateFunc);
+        var method = validatedType.GetPredicateValidator(propType, predicateFunc);
 
         var instance = Expression.Constant(validator);
         var arg01 = Expression.Parameter(propType);
@@ -108,5 +91,51 @@ public class ValidationBuilder {
 
     var lambdaToCallWithMessageMethod = Expression.Lambda(builderOptionGenericFunc, messageMethodCall);
     lambdaToCallWithMessageMethod.CompileFast().DynamicInvoke();
+  }
+
+  private MethodCallExpression BuildForValueBasedRules(PropertyRule rule, Type propType,
+    Type validatedType, ConstantExpression ruleFor, ParameterExpression p) {
+    var value = ((ValueBasedRules)rule).Value;
+    var anotherProp = ((ValueBasedRules)rule).AnotherProp;
+    Expression arg01 = null;
+    if (value is null && anotherProp is null) {
+      throw new ArgumentOutOfRangeException(nameof(value));
+    }
+
+    var arg02 = Expression.Constant(propType.GetDefaultComparerForType());
+
+    if (value is null) {
+      var theOtherProp = validatedType.GetProperty(anotherProp!, BindingFlags.Instance | BindingFlags.Public
+        | BindingFlags.IgnoreCase);
+      var memberExpression = Expression.MakeMemberAccess(p, theOtherProp!);
+      var method = rule switch {
+        NotEqualRule => validatedType.GetNotEqualValidatorWithAnotherProperty(propType),
+        LessThanRule => validatedType.GetLessThanValidatorWithAnotherProperty(propType),
+        LessThanOrEqualRule => validatedType.GetLessThanOrEqualValidatorWithAnotherProperty(propType),
+        GreaterThanRule => validatedType.GetGreaterThanValidatorWithAnotherProperty(propType),
+        GreaterThanOrEqualRule => validatedType.GetGreaterThanOrEqualValidatorWithAnotherProperty(propType),
+        _ => throw new ArgumentOutOfRangeException(nameof(rule), rule, null)
+      };
+
+      arg01 = Expression.Lambda(memberExpression, p);
+      var methodCall = method!.GetParameters().Length == 2
+        ? Expression.Call(null, method!, ruleFor, arg01)
+        : Expression.Call(null, method!, ruleFor, arg01, arg02);
+      return methodCall;
+    } else {
+      arg01 = Expression.Constant(Convert.ChangeType(value, propType));
+      var method = rule switch {
+        NotEqualRule => validatedType.GetNotEqualValidator(propType),
+        LessThanRule => validatedType.GetLessThanValidator(propType),
+        LessThanOrEqualRule => validatedType.GetLessThanOrEqualValidator(propType),
+        GreaterThanRule => validatedType.GetGreaterThanValidator(propType),
+        GreaterThanOrEqualRule => validatedType.GetGreaterThanOrEqualValidator(propType),
+        _ => throw new ArgumentOutOfRangeException(nameof(rule), rule, null)
+      };
+      var methodCall = method!.GetParameters().Length == 2
+        ? Expression.Call(null, method, ruleFor, arg01)
+        : Expression.Call(null, method, ruleFor, arg01, arg02);
+      return methodCall;
+    }
   }
 }

@@ -56,7 +56,7 @@ public static class ReflectionHelper {
     return (t.IsAssignableFrom(paramType)
             || (t.IsGenericParameter && !paramType.IsGenericType
                                      && (t.GetGenericParameterConstraints().Length == 0
-                                         || t.GetGenericParameterConstraints().Contains(paramType)))
+                                         || t.GetGenericParameterConstraints().Any(c => c.IsAssignableFrom(paramType))))
             || (t.IsGenericType && paramType.IsGenericType &&
                 t.GetGenericTypeDefinition().IsAssignableFrom(paramType.GetGenericTypeDefinition())));
   }

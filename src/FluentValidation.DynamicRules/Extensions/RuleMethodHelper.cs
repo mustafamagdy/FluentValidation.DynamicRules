@@ -24,6 +24,30 @@ public static class RuleMethodHelper {
     });
   }
 
+  public static MethodInfo? GetLessThanValidator(this Type validatedType, Type propType) {
+    return GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.LessThan), propType, new[] {
+      propType
+    });
+  }
+
+  public static MethodInfo? GetLessThanOrEqualValidator(this Type validatedType, Type propType) {
+    return GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.LessThanOrEqualTo), propType, new[] {
+      propType
+    });
+  }
+
+  public static MethodInfo? GetGreaterThanValidator(this Type validatedType, Type propType) {
+    return GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.GreaterThan), propType, new[] {
+      propType
+    });
+  }
+
+  public static MethodInfo? GetGreaterThanOrEqualValidator(this Type validatedType, Type propType) {
+    return GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.GreaterThanOrEqualTo), propType, new[] {
+      propType
+    });
+  }
+
   public static MethodInfo? GetNotEqualValidatorWithAnotherProperty(this Type validatedType, Type propType) {
     var func = typeof(Func<,>).MakeGenericType(validatedType, propType);
     var otherPropExp = typeof(Expression<>).MakeGenericType(func);
@@ -31,6 +55,38 @@ public static class RuleMethodHelper {
     return GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.NotEqual), propType, new[] {
       otherPropExp,
       comparerGenericType
+    });
+  }
+
+  public static MethodInfo? GetLessThanValidatorWithAnotherProperty(this Type validatedType, Type propType) {
+    var func = typeof(Func<,>).MakeGenericType(validatedType, propType);
+    var otherPropExp = typeof(Expression<>).MakeGenericType(func);
+    return GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.LessThan), propType, new[] {
+      otherPropExp
+    });
+  }
+
+  public static MethodInfo? GetLessThanOrEqualValidatorWithAnotherProperty(this Type validatedType, Type propType) {
+    var func = typeof(Func<,>).MakeGenericType(validatedType, propType);
+    var otherPropExp = typeof(Expression<>).MakeGenericType(func);
+    return GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.LessThanOrEqualTo), propType, new[] {
+      otherPropExp
+    });
+  }
+
+  public static MethodInfo? GetGreaterThanValidatorWithAnotherProperty(this Type validatedType, Type propType) {
+    var func = typeof(Func<,>).MakeGenericType(validatedType, propType);
+    var otherPropExp = typeof(Expression<>).MakeGenericType(func);
+    return GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.GreaterThan), propType, new[] {
+      otherPropExp
+    });
+  }
+
+  public static MethodInfo? GetGreaterThanOrEqualValidatorWithAnotherProperty(this Type validatedType, Type propType) {
+    var func = typeof(Func<,>).MakeGenericType(validatedType, propType);
+    var otherPropExp = typeof(Expression<>).MakeGenericType(func);
+    return GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.GreaterThanOrEqualTo), propType, new[] {
+      otherPropExp
     });
   }
 

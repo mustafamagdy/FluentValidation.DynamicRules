@@ -146,6 +146,59 @@ public class DynamicRuleTests {
   }
 
   [Fact]
+  public void Parser_Parse_String_LessThan() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""age""><less-than value=""100""/></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.Age = 100;
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.Age), result1.Errors[0].PropertyName);
+    Assert.Equal("'Age' must be less than '100'.", result1.Errors[0].ErrorMessage);
+    Assert.Equal("LessThanValidator", result1.Errors[0].ErrorCode);
+  }
+  
+  [Fact]
+  public void Parser_Parse_String_LessThanOrEqual() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""age""><less-than-equal value=""100""/></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.Age = 101;
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.Age), result1.Errors[0].PropertyName);
+    Assert.Equal("'Age' must be less than or equal to '100'.", result1.Errors[0].ErrorMessage);
+    Assert.Equal("LessThanOrEqualValidator", result1.Errors[0].ErrorCode);
+  }
+  
+  [Fact]
+  public void Parser_Parse_String_LessThanOrEqualWithAnotherProperty() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""age""><less-than-equal prop=""anotherAge""/></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.AnotherAge = 100;
+    person1.Age = 101;
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.Age), result1.Errors[0].PropertyName);
+    Assert.Equal("'Age' must be less than or equal to '100'.", result1.Errors[0].ErrorMessage);
+    Assert.Equal("LessThanOrEqualValidator", result1.Errors[0].ErrorCode);
+  }
+  
+  
+  [Fact]
   public void Parser_Parse_String_LengthWithFixedValue() {
     var parser = new RuleParser();
     var xml = @"<rules><rule-for prop=""firstName""><string-len value=""5"" /></rule-for></rules>";
@@ -171,12 +224,12 @@ public class DynamicRuleTests {
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public int Age { get; set; }
+    public int AnotherAge { get; set; }
   }
 
   public class PersonValidator : AbstractDynamicValidator<Person> {
     public PersonValidator(ValidationBuilder builder) : base(builder) {
       //
-      // RuleFor(a => a.FirstName).NotEqual(a => a.LastName);
     }
 
     private bool MustBeAhmed(string value) => !string.IsNullOrEmpty(value) && value.ToLower() == "ahmed";

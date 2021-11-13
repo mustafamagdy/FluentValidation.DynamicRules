@@ -6,4 +6,8 @@ public enum RuleType {
   Length,
   NotEqual,
   MustBe,
+  LessThan,
+  LessThanOrEqual,
+  GreaterThan,
+  GreaterThanOrEqual
 }
