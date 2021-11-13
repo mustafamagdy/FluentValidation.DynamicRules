@@ -106,6 +106,23 @@ public class DynamicRuleTests {
   }
 
   [Fact]
+  public void Parser_Parse_String_Equal() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""age""><equal value=""0""/></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.Age = 10;
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.Age), result1.Errors[0].PropertyName);
+    Assert.Equal("'Age' must be equal to '0'.", result1.Errors[0].ErrorMessage);
+    Assert.Equal("EqualValidator", result1.Errors[0].ErrorCode);
+  }
+  
+  [Fact]
   public void Parser_Parse_String_NotEqualAnotherProp() {
     var parser = new RuleParser();
     var xml = @"<rules><rule-for prop=""firstName""><not-equal prop=""lastName""/></rule-for></rules>";
@@ -220,6 +237,51 @@ public class DynamicRuleTests {
     Assert.Equal("LengthValidator", result1.Errors[0].ErrorCode);
   }
 
+  
+  [Fact]
+  public void Parser_Parse_String_MaxLength() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""firstName""><max-len value=""5"" /></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    var result1 = validator.Validate(person1);
+    Assert.True(result1.IsValid);
+
+    person1.FirstName = "123456";
+    result1 = validator.Validate(person1);
+
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.FirstName), result1.Errors[0].PropertyName);
+    Assert.Equal("The length of 'First Name' must be 5 characters or fewer. You entered 6 characters.",
+      result1.Errors[0].ErrorMessage);
+    Assert.Equal("MaximumLengthValidator", result1.Errors[0].ErrorCode);
+  }
+  
+  [Fact]
+  public void Parser_Parse_String_MinLength() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""firstName""><min-len value=""5"" /></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    var result1 = validator.Validate(person1);
+    Assert.True(result1.IsValid);
+
+    person1.FirstName = "1234";
+    result1 = validator.Validate(person1);
+
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.FirstName), result1.Errors[0].PropertyName);
+    Assert.Equal("The length of 'First Name' must be at least 5 characters. You entered 4 characters.",
+      result1.Errors[0].ErrorMessage);
+    Assert.Equal("MinimumLengthValidator", result1.Errors[0].ErrorCode);
+  }
+  
   public class Person {
     public string? FirstName { get; set; }
     public string? LastName { get; set; }

@@ -51,11 +51,11 @@ namespace FluentValidation.DynamicRules {
 
           return new LengthRule(message, min, max);
         }
-        case "not-equal":
-        case "less-than":
-        case "less-than-equal":
-        case "greater-than":
-        case "greater-than-equal": {
+        case "must-be": {
+          var methodName = node.Attribute("call")!.Value;
+          return new MustRule(message, methodName);
+        }
+        default: {
           var value = node.Attribute("value")?.Value;
           var anotherProp = node.Attribute("prop")?.Value;
           return node.Name.LocalName switch {
@@ -64,15 +64,12 @@ namespace FluentValidation.DynamicRules {
             "less-than-equal" => new LessThanOrEqualRule(message, value, anotherProp),
             "greater-than" => new GreaterThanRule(message, value, anotherProp),
             "greater-than-equal" => new GreaterThanOrEqualRule(message, value, anotherProp),
-            _ => throw new Exception("Not gonna happen")
+            "equal" => new EqualRule(message, value, anotherProp),
+            "min-len" => new MinLengthRule(message, value),
+            "max-len" => new MaxLengthRule(message, value),
+            _ => throw new NotSupportedException($"{node.Name} is not supported.")
           };
         }
-        case "must-be": {
-          var methodName = node.Attribute("call")!.Value;
-          return new MustRule(message, methodName);
-        }
-        default:
-          throw new NotSupportedException($"{node.Name} is not supported.");
       }
     }
   }

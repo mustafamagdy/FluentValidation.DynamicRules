@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
@@ -41,7 +42,7 @@ public class ValidationBuilder {
         break;
       }
       case RuleType.Length: {
-        var method = validatedType.GetLengthValidator(propType, typeof(int), typeof(int));
+        var method = validatedType.GetLengthValidator(propType);
 
         var (min, max) = (LengthRule)rule;
         var arg01 = Expression.Constant(min);
@@ -51,14 +52,7 @@ public class ValidationBuilder {
 
         break;
       }
-      case RuleType.NotEqual:
-      case RuleType.LessThan:
-      case RuleType.LessThanOrEqual:
-      case RuleType.GreaterThan:
-      case RuleType.GreaterThanOrEqual: {
-        methodCall = BuildForValueBasedRules(rule, propType, validatedType, ruleFor, p);
-        break;
-      }
+
       case RuleType.MustBe: {
         var predicateMethod = validator.GetType().GetPrivateMethodForType(((MustRule)rule).MethodName, propType);
         var predicateFunc = typeof(Func<,>).MakeGenericType(propType, typeof(bool));
@@ -74,8 +68,19 @@ public class ValidationBuilder {
         methodCall = Expression.Call(null, method!, ruleFor, predicate);
         break;
       }
+      case RuleType.Equal:
+      case RuleType.NotEqual:
+      case RuleType.LessThan:
+      case RuleType.LessThanOrEqual:
+      case RuleType.GreaterThan:
+      case RuleType.GreaterThanOrEqual:
+      case RuleType.MinLength:
+      case RuleType.MaxLength: {
+        methodCall = BuildForValueBasedRules(rule, propType, validatedType, ruleFor, p);
+        break;
+      }
       default:
-        throw new NotSupportedException($"Rule {rule.RuleType:S} is not supported");
+        throw new NotSupportedException($"Rule {rule.RuleType:G} is not supported");
     }
 
     var builderOptionsGenericType = typeof(IRuleBuilderOptions<,>).MakeGenericType(typeof(T), propType);
@@ -114,6 +119,7 @@ public class ValidationBuilder {
         LessThanOrEqualRule => validatedType.GetLessThanOrEqualValidatorWithAnotherProperty(propType),
         GreaterThanRule => validatedType.GetGreaterThanValidatorWithAnotherProperty(propType),
         GreaterThanOrEqualRule => validatedType.GetGreaterThanOrEqualValidatorWithAnotherProperty(propType),
+        EqualRule => validatedType.GetEqualValidatorWithAnotherProperty(propType),
         _ => throw new ArgumentOutOfRangeException(nameof(rule), rule, null)
       };
 
@@ -123,18 +129,34 @@ public class ValidationBuilder {
         : Expression.Call(null, method!, ruleFor, arg01, arg02);
       return methodCall;
     } else {
-      arg01 = Expression.Constant(Convert.ChangeType(value, propType));
       var method = rule switch {
         NotEqualRule => validatedType.GetNotEqualValidator(propType),
         LessThanRule => validatedType.GetLessThanValidator(propType),
         LessThanOrEqualRule => validatedType.GetLessThanOrEqualValidator(propType),
         GreaterThanRule => validatedType.GetGreaterThanValidator(propType),
         GreaterThanOrEqualRule => validatedType.GetGreaterThanOrEqualValidator(propType),
+        EqualRule => validatedType.GetEqualValidator(propType),
+        MinLengthRule => validatedType.GetMinLengthValidator(propType),
+        MaxLengthRule => validatedType.GetMaxLengthValidator(propType),
         _ => throw new ArgumentOutOfRangeException(nameof(rule), rule, null)
       };
-      var methodCall = method!.GetParameters().Length == 2
-        ? Expression.Call(null, method, ruleFor, arg01)
-        : Expression.Call(null, method, ruleFor, arg01, arg02);
+      var @params = method!.GetParameters();
+      MethodCallExpression methodCall;
+      switch (@params.Length) {
+        case 2: {
+          var argType = method.GetParameters()[1].ParameterType;
+          arg01 = Expression.Constant(Convert.ChangeType(value, argType));
+          methodCall = Expression.Call(null, method, ruleFor, arg01);
+          break;
+        }
+        case 3:
+          arg01 = Expression.Constant(Convert.ChangeType(value, propType));
+          methodCall=Expression.Call(null, method, ruleFor, arg01, arg02);
+          break;
+        default:
+          throw new NotSupportedException($"Method {method.Name} has unsupported number of parameters");
+      }
+      
       return methodCall;
     }
   }
