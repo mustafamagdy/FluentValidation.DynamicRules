@@ -1,17 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using FluentValidation.DynamicRules.Rules;
 using FluentValidation.DynamicRules.Validators;
 
 namespace FluentValidation.DynamicRules {
-  public class RuleParser {
-    public ValidationBuilder Parse(string xmlRules) {
-      var nodes = XElement.Parse(xmlRules);
+  public class RuleParser<T> : IRuleParser<T> {
+    public ValidationBuilder<T> Parse(string text) {
+      var nodes = XElement.Parse(text);
       var ruleSet = (from propNodes in nodes.Elements("rule-for")
         select new {
           Prop = propNodes.Attribute("prop")!.Value.ToString(),
@@ -23,7 +19,7 @@ namespace FluentValidation.DynamicRules {
         var validatedProperty = new ValidatedProperty(a.Prop, a.Rules.Select(ParseRule));
         return validatedProperty;
       });
-      return new ValidationBuilder(validatedProperties);
+      return new ValidationBuilder<T>(validatedProperties);
     }
 
     private PropertyRule ParseRule(XElement node) {
@@ -67,7 +63,9 @@ namespace FluentValidation.DynamicRules {
           var methodName = node.Attribute("call")?.Value;
           var methodNameWithParentObject = node.Attribute("with-parent")?.Value;
           var methodNameWithParentObjectAndContext = node.Attribute("with-context")?.Value;
-          return new MustRule(message, methodName, methodNameWithParentObject, methodNameWithParentObjectAndContext);
+          return new MustRule(message, methodName ?? "",
+            methodNameWithParentObject ?? "",
+            methodNameWithParentObjectAndContext ?? "");
         }
         case "exclusive-between": {
           var min = Convert.ToInt32(node.Attribute("min")!.Value);
