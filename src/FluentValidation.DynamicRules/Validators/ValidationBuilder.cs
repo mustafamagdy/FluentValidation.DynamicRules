@@ -5,25 +5,26 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
 using FastExpressionCompiler;
+using FluentValidation;
 using FluentValidation.DynamicRules.Extensions;
 using FluentValidation.DynamicRules.Rules;
 using FluentValidation.Validators;
 
 namespace FluentValidation.DynamicRules.Validators;
 
-public class ValidationBuilder {
+public class ValidationBuilder<T> {
   private readonly IEnumerable<ValidatedProperty> _properties;
   public ValidationBuilder(IEnumerable<ValidatedProperty> properties) { _properties = properties; }
 
-  public void BuildFor<T>(AbstractValidator<T> validator) {
+  public void BuildFor(AbstractValidator<T> validator) {
     _properties.ForEach(prop => BuildRulesForProperty(prop, validator));
   }
 
-  private void BuildRulesForProperty<T>(ValidatedProperty prop, AbstractValidator<T> validator) {
+  private void BuildRulesForProperty(ValidatedProperty prop, AbstractValidator<T> validator) {
     prop.Rules.ForEach(rule => BuildRule(rule, prop, validator));
   }
 
-  private void BuildRule<T>(PropertyRule rule, ValidatedProperty prop, AbstractValidator<T> validator) {
+  private void BuildRule(PropertyRule rule, ValidatedProperty prop, AbstractValidator<T> validator) {
     var p = Expression.Parameter(typeof(T));
     var ruleFor = validator.GetRuleFor(p, prop);
     // MethodInfo? method;

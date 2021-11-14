@@ -9,8 +9,8 @@ using FluentValidation.DynamicRules.Rules;
 using FluentValidation.DynamicRules.Validators;
 
 namespace FluentValidation.DynamicRules {
-  public class RuleParser {
-    public ValidationBuilder Parse(string xmlRules) {
+  public class RuleParser<T> {
+    public ValidationBuilder<T> Parse(string xmlRules) {
       var nodes = XElement.Parse(xmlRules);
       var ruleSet = (from propNodes in nodes.Elements("rule-for")
         select new {
@@ -23,7 +23,7 @@ namespace FluentValidation.DynamicRules {
         var validatedProperty = new ValidatedProperty(a.Prop, a.Rules.Select(ParseRule));
         return validatedProperty;
       });
-      return new ValidationBuilder(validatedProperties);
+      return new ValidationBuilder<T>(validatedProperties);
     }
 
     private PropertyRule ParseRule(XElement node) {

@@ -1,3 +1,5 @@
+using FluentValidation;
+using FluentValidation.DynamicRules;
 using FluentValidation.DynamicRules.Validators;
 using Xunit;
 
@@ -6,7 +8,7 @@ namespace FluentValidation.DynamicRules.Tests;
 public class DynamicRuleTests {
   [Fact]
   public void Parser_Parse_String_NotNull() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""firstName""><not-null message=""value cannot be null""/></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -23,7 +25,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_Null() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""firstName""><null message=""value must be null""/></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -40,7 +42,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_Empty() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""firstName""><empty message=""value must be empty""/></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -57,7 +59,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_NotEmpty() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""firstName""><not-empty message=""value cannot be empty""/></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -73,7 +75,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_Email() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""email""><email /></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -91,7 +93,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_CreditCard() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""creditCard""><credit-card /></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -110,7 +112,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_NotEmptyWithInt() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""Age""><not-empty /></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -126,7 +128,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_NotEmptyWithIntWithCustomMessage() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""Age""><not-empty message=""value cannot be zero""/></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -143,7 +145,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_MustBe() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml =
       @"<rules><rule-for prop=""firstName""><must-be call=""MustBeAhmed"" message=""This is not a valid firstName"" /></rule-for></rules>";
     var builder = parser.Parse(xml);
@@ -161,7 +163,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_FirstName_MustBeWithParentObject() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml =
       @"<rules><rule-for prop=""firstName""><must-be with-parent=""CustomWithParentObject"" /></rule-for></rules>";
     var builder = parser.Parse(xml);
@@ -179,7 +181,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_FirstName_MustBeWithParentObjectAndContext() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml =
       @"<rules><rule-for prop=""firstName""><must-be with-context=""CustomWithContextAndParentObject"" /></rule-for></rules>";
     var builder = parser.Parse(xml);
@@ -197,7 +199,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_NotEqual() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""age""><not-equal value=""0""/></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -214,7 +216,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_Equal() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""age""><equal value=""0""/></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -231,7 +233,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_NotEqualAnotherProp() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""firstName""><not-equal prop=""lastName""/></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -249,7 +251,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_LengthWithRange() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""firstName""><string-len min=""10"" max=""20"" /></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -271,7 +273,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_ExclusiveBetween() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""age""><exclusive-between min=""10"" max=""20"" /></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -294,7 +296,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_InclusiveBetween() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""age""><inclusive-between min=""10"" max=""20"" /></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -317,7 +319,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_LessThan() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""age""><less-than value=""100""/></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -334,7 +336,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_LessThanOrEqual() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""age""><less-than-equal value=""100""/></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -349,7 +351,7 @@ public class DynamicRuleTests {
     Assert.Equal("LessThanOrEqualValidator", result1.Errors[0].ErrorCode);
   }[Fact]
   public void Parser_Parse_String_GreaterThan() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""age""><greater-than value=""100""/></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -366,7 +368,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_GreaterThanOrEqual() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""age""><greater-than-equal value=""100""/></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -383,7 +385,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_LessThanOrEqualWithAnotherProperty() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""age""><less-than-equal prop=""anotherAge""/></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -402,7 +404,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_LengthWithFixedValue() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""firstName""><string-len value=""5"" /></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -425,7 +427,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_MaxLength() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""firstName""><max-len value=""5"" /></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -447,7 +449,7 @@ public class DynamicRuleTests {
 
   [Fact]
   public void Parser_Parse_String_MinLength() {
-    var parser = new RuleParser();
+    var parser = new RuleParser<Person>();
     var xml = @"<rules><rule-for prop=""firstName""><min-len value=""5"" /></rule-for></rules>";
     var builder = parser.Parse(xml);
     var validator = new PersonValidator(builder);
@@ -477,7 +479,7 @@ public class DynamicRuleTests {
   }
 
   public class PersonValidator : AbstractDynamicValidator<Person> {
-    public PersonValidator(ValidationBuilder builder) : base(builder) {
+    public PersonValidator(ValidationBuilder<Person> builder) : base(builder) {
       //
     }
 
