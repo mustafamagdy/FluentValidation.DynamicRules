@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Metadata.Ecma335;
 using FastExpressionCompiler;
 using FluentValidation;
 using FluentValidation.DynamicRules.Extensions;
@@ -88,7 +86,7 @@ public class ValidationBuilder<T> {
         var method = validatedType.GetInclusiveBetweenValidator(propType);
 
         var (min, max) = (RangeBasedRule)rule;
-        var arg01 = Expression.Constant(min);
+        var arg01 = Expression.Constant(min, typeof(int));
         var arg02 = Expression.Constant(max);
 
         methodCall = Expression.Call(null, method!, ruleFor, arg01, arg02);
@@ -169,7 +167,7 @@ public class ValidationBuilder<T> {
     lambdaToCallWithMessageMethod.CompileFast().DynamicInvoke();
   }
 
-  private MethodCallExpression BuildForValueBasedRules(PropertyRule rule, Type propType,
+  private static MethodCallExpression BuildForValueBasedRules(PropertyRule rule, Type propType,
     Type validatedType, ConstantExpression ruleFor, ParameterExpression p) {
     var value = ((ValueBasedRules)rule).Value;
     var anotherProp = ((ValueBasedRules)rule).AnotherProp;

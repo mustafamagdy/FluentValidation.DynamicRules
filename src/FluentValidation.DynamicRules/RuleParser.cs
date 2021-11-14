@@ -9,9 +9,9 @@ using FluentValidation.DynamicRules.Rules;
 using FluentValidation.DynamicRules.Validators;
 
 namespace FluentValidation.DynamicRules {
-  public class RuleParser<T> {
-    public ValidationBuilder<T> Parse(string xmlRules) {
-      var nodes = XElement.Parse(xmlRules);
+  public class RuleParser<T> : IRuleParser<T> {
+    public ValidationBuilder<T> Parse(string text) {
+      var nodes = XElement.Parse(text);
       var ruleSet = (from propNodes in nodes.Elements("rule-for")
         select new {
           Prop = propNodes.Attribute("prop")!.Value.ToString(),
@@ -67,7 +67,9 @@ namespace FluentValidation.DynamicRules {
           var methodName = node.Attribute("call")?.Value;
           var methodNameWithParentObject = node.Attribute("with-parent")?.Value;
           var methodNameWithParentObjectAndContext = node.Attribute("with-context")?.Value;
-          return new MustRule(message, methodName, methodNameWithParentObject, methodNameWithParentObjectAndContext);
+          return new MustRule(message, methodName ?? "",
+            methodNameWithParentObject ?? "",
+            methodNameWithParentObjectAndContext ?? "");
         }
         case "exclusive-between": {
           var min = Convert.ToInt32(node.Attribute("min")!.Value);
