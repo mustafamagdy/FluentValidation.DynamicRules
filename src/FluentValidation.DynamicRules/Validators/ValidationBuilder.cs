@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Metadata.Ecma335;
 using FastExpressionCompiler;
 using FluentValidation.DynamicRules.Extensions;
 using FluentValidation.DynamicRules.Rules;
@@ -11,19 +9,19 @@ using FluentValidation.Validators;
 
 namespace FluentValidation.DynamicRules.Validators;
 
-public class ValidationBuilder {
+public class ValidationBuilder<T> {
   private readonly IEnumerable<ValidatedProperty> _properties;
   public ValidationBuilder(IEnumerable<ValidatedProperty> properties) { _properties = properties; }
 
-  public void BuildFor<T>(AbstractValidator<T> validator) {
+  public void BuildFor(AbstractValidator<T> validator) {
     _properties.ForEach(prop => BuildRulesForProperty(prop, validator));
   }
 
-  private void BuildRulesForProperty<T>(ValidatedProperty prop, AbstractValidator<T> validator) {
+  private void BuildRulesForProperty(ValidatedProperty prop, AbstractValidator<T> validator) {
     prop.Rules.ForEach(rule => BuildRule(rule, prop, validator));
   }
 
-  private void BuildRule<T>(PropertyRule rule, ValidatedProperty prop, AbstractValidator<T> validator) {
+  private void BuildRule(PropertyRule rule, ValidatedProperty prop, AbstractValidator<T> validator) {
     var p = Expression.Parameter(typeof(T));
     var ruleFor = validator.GetRuleFor(p, prop);
     // MethodInfo? method;
@@ -87,7 +85,7 @@ public class ValidationBuilder {
         var method = validatedType.GetInclusiveBetweenValidator(propType);
 
         var (min, max) = (RangeBasedRule)rule;
-        var arg01 = Expression.Constant(min);
+        var arg01 = Expression.Constant(min, typeof(int));
         var arg02 = Expression.Constant(max);
 
         methodCall = Expression.Call(null, method!, ruleFor, arg01, arg02);
@@ -168,7 +166,7 @@ public class ValidationBuilder {
     lambdaToCallWithMessageMethod.CompileFast().DynamicInvoke();
   }
 
-  private MethodCallExpression BuildForValueBasedRules(PropertyRule rule, Type propType,
+  private static MethodCallExpression BuildForValueBasedRules(PropertyRule rule, Type propType,
     Type validatedType, ConstantExpression ruleFor, ParameterExpression p) {
     var value = ((ValueBasedRules)rule).Value;
     var anotherProp = ((ValueBasedRules)rule).AnotherProp;
