@@ -95,18 +95,47 @@ public class ValidationBuilder {
       }
 
       case RuleType.MustBe: {
-        var predicateMethod = validator.GetType().GetPrivateMethodForType(((MustRule)rule).MethodName, propType);
-        var predicateFunc = typeof(Func<,>).MakeGenericType(propType, typeof(bool));
-
-        var method = validatedType.GetPredicateValidator(propType, predicateFunc);
+        var (methodName, methodWithParent, methodWithContext) = ((MustRule)rule);
+        MethodInfo? predicateMethod = null;
+        Type? predicateFunc = null;
+        LambdaExpression? predicate = null;
+        MethodInfo? method = null;
 
         var instance = Expression.Constant(validator);
-        var arg01 = Expression.Parameter(propType);
 
-        var predicateCall = Expression.Call(instance, predicateMethod!, arg01);
-        var predicate = Expression.Lambda(predicateCall, arg01);
+        if (!string.IsNullOrEmpty(methodName)) {
+          predicateMethod = validator.GetType().GetPrivateMethodForType(methodName, propType);
+          predicateFunc = typeof(Func<,>).MakeGenericType(propType, typeof(bool));
 
-        methodCall = Expression.Call(null, method!, ruleFor, predicate);
+          method = validatedType.GetPredicateValidator(propType, predicateFunc);
+          var arg01 = Expression.Parameter(propType);
+          var predicateCall = Expression.Call(instance, predicateMethod!, arg01);
+          predicate = Expression.Lambda(predicateCall, arg01);
+        } else if (!string.IsNullOrEmpty(methodWithParent)) {
+          predicateMethod = validator.GetType().GetPrivateMethodForType(methodWithParent, typeof(T), propType);
+          predicateFunc = typeof(Func<,,>).MakeGenericType(typeof(T), propType, typeof(bool));
+
+          method = validatedType.GetPredicateValidator(propType, predicateFunc);
+          var arg01 = Expression.Parameter(typeof(T));
+          var arg02 = Expression.Parameter(propType);
+          var predicateCall = Expression.Call(instance, predicateMethod!, arg01, arg02);
+          predicate = Expression.Lambda(predicateCall, arg01, arg02);
+        } else if (!string.IsNullOrEmpty(methodWithContext)) {
+          predicateMethod = validator.GetType().GetPrivateMethodForType(methodWithContext, typeof(T), propType,
+            typeof(ValidationContext<T>));
+          predicateFunc = typeof(Func<,,,>).MakeGenericType(typeof(T), propType,
+            typeof(ValidationContext<T>), typeof(bool));
+
+          method = validatedType.GetPredicateValidator(propType, predicateFunc);
+          var arg01 = Expression.Parameter(typeof(T));
+          var arg02 = Expression.Parameter(propType);
+          var arg03 = Expression.Parameter(typeof(ValidationContext<T>));
+          var predicateCall = Expression.Call(instance, predicateMethod!, arg01, arg02, arg03);
+          predicate = Expression.Lambda(predicateCall, arg01, arg02, arg03);
+        }
+
+
+        methodCall = Expression.Call(null, method!, ruleFor, predicate!);
         break;
       }
       case RuleType.Equal:

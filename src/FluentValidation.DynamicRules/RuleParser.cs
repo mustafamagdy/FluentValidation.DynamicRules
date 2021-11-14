@@ -64,8 +64,10 @@ namespace FluentValidation.DynamicRules {
           return new LengthRule(message, min, max);
         }
         case "must-be": {
-          var methodName = node.Attribute("call")!.Value;
-          return new MustRule(message, methodName);
+          var methodName = node.Attribute("call")?.Value;
+          var methodNameWithParentObject = node.Attribute("with-parent")?.Value;
+          var methodNameWithParentObjectAndContext = node.Attribute("with-context")?.Value;
+          return new MustRule(message, methodName, methodNameWithParentObject, methodNameWithParentObjectAndContext);
         }
         case "exclusive-between": {
           var min = Convert.ToInt32(node.Attribute("min")!.Value);
