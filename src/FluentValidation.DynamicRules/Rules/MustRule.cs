@@ -1,6 +1,6 @@
 namespace FluentValidation.DynamicRules.Rules;
 
-public sealed class MustRule : PropertyRule {
+internal sealed class MustRule : PropertyRule {
   public MustRule(string message, string methodName, string methodWithParent, string methodWithContext)
     : base(RuleType.MustBe, message) {
     MethodName =

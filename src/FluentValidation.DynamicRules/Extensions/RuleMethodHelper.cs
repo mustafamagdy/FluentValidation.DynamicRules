@@ -7,7 +7,7 @@ using FluentValidation.Validators;
 
 namespace FluentValidation.DynamicRules.Extensions;
 
-public static class RuleMethodHelper {
+internal static class RuleMethodHelper {
   public static MethodInfo? GetNotNullValidator(this Type validatedType, Type propType) =>
     GetValidationMethod(validatedType, nameof(DefaultValidatorExtensions.NotNull), propType, Type.EmptyTypes);
 

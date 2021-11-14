@@ -5,7 +5,7 @@ using FluentValidation.DynamicRules.Validators;
 
 namespace FluentValidation.DynamicRules.Extensions;
 
-public static class TypeExtension {
+internal static class TypeExtension {
   public static object GetDefaultComparerForType(this Type type) {
     var defaultComparerType = typeof(DefaultEqualityComparer<>).MakeGenericType(type);
     var defaultComparer = defaultComparerType.New();
