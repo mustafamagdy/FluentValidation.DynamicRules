@@ -160,6 +160,42 @@ public class DynamicRuleTests {
   }
 
   [Fact]
+  public void Parser_Parse_FirstName_MustBeWithParentObject() {
+    var parser = new RuleParser();
+    var xml =
+      @"<rules><rule-for prop=""firstName""><must-be with-parent=""CustomWithParentObject"" /></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.FirstName = "Ali";
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.FirstName), result1.Errors[0].PropertyName);
+    Assert.Equal("The specified condition was not met for 'First Name'.", result1.Errors[0].ErrorMessage);
+    Assert.Equal("PredicateValidator", result1.Errors[0].ErrorCode);
+  }
+
+  [Fact]
+  public void Parser_Parse_FirstName_MustBeWithParentObjectAndContext() {
+    var parser = new RuleParser();
+    var xml =
+      @"<rules><rule-for prop=""firstName""><must-be with-context=""CustomWithContextAndParentObject"" /></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.FirstName = "Ali";
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.FirstName), result1.Errors[0].PropertyName);
+    Assert.Equal("He is not Ahmed", result1.Errors[0].ErrorMessage);
+    
+  }
+
+  [Fact]
   public void Parser_Parse_String_NotEqual() {
     var parser = new RuleParser();
     var xml = @"<rules><rule-for prop=""age""><not-equal value=""0""/></rule-for></rules>";
@@ -232,7 +268,7 @@ public class DynamicRuleTests {
       result1.Errors[0].ErrorMessage);
     Assert.Equal("LengthValidator", result1.Errors[0].ErrorCode);
   }
-  
+
   [Fact]
   public void Parser_Parse_String_ExclusiveBetween() {
     var parser = new RuleParser();
@@ -244,7 +280,7 @@ public class DynamicRuleTests {
     person1.Age = 15;
     var result1 = validator.Validate(person1);
     Assert.True(result1.IsValid);
-    
+
     person1.Age = 20;
     result1 = validator.Validate(person1);
 
@@ -255,6 +291,7 @@ public class DynamicRuleTests {
       result1.Errors[0].ErrorMessage);
     Assert.Equal("ExclusiveBetweenValidator", result1.Errors[0].ErrorCode);
   }
+
   [Fact]
   public void Parser_Parse_String_InclusiveBetween() {
     var parser = new RuleParser();
@@ -266,7 +303,7 @@ public class DynamicRuleTests {
     person1.Age = 20;
     var result1 = validator.Validate(person1);
     Assert.True(result1.IsValid);
-    
+
     person1.Age = 21;
     result1 = validator.Validate(person1);
 
@@ -310,6 +347,38 @@ public class DynamicRuleTests {
     Assert.Equal(nameof(Person.Age), result1.Errors[0].PropertyName);
     Assert.Equal("'Age' must be less than or equal to '100'.", result1.Errors[0].ErrorMessage);
     Assert.Equal("LessThanOrEqualValidator", result1.Errors[0].ErrorCode);
+  }[Fact]
+  public void Parser_Parse_String_GreaterThan() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""age""><greater-than value=""100""/></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.Age = 100;
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.Age), result1.Errors[0].PropertyName);
+    Assert.Equal("'Age' must be greater than '100'.", result1.Errors[0].ErrorMessage);
+    Assert.Equal("GreaterThanValidator", result1.Errors[0].ErrorCode);
+  }
+
+  [Fact]
+  public void Parser_Parse_String_GreaterThanOrEqual() {
+    var parser = new RuleParser();
+    var xml = @"<rules><rule-for prop=""age""><greater-than-equal value=""100""/></rule-for></rules>";
+    var builder = parser.Parse(xml);
+    var validator = new PersonValidator(builder);
+
+    var person1 = new Person();
+    person1.Age = 99;
+    var result1 = validator.Validate(person1);
+    Assert.False(result1.IsValid);
+    Assert.NotEmpty(result1.Errors);
+    Assert.Equal(nameof(Person.Age), result1.Errors[0].PropertyName);
+    Assert.Equal("'Age' must be greater than or equal to '100'.", result1.Errors[0].ErrorMessage);
+    Assert.Equal("GreaterThanOrEqualValidator", result1.Errors[0].ErrorCode);
   }
 
   [Fact]
@@ -413,5 +482,17 @@ public class DynamicRuleTests {
     }
 
     private bool MustBeAhmed(string value) => !string.IsNullOrEmpty(value) && value.ToLower() == "ahmed";
+
+    private bool CustomWithParentObject(Person person, string value) {
+      return person.Age < 100
+             && !string.IsNullOrEmpty(value) && value.ToLower() == "ahmed";
+    }
+
+    private bool CustomWithContextAndParentObject(Person person, string value, ValidationContext<Person> context) {
+      var isValid = !string.IsNullOrEmpty(value) && value.ToLower() == "ahmed";
+      if (!isValid) { context.AddFailure(nameof(Person.FirstName), "He is not Ahmed"); }
+
+      return isValid;
+    }
   }
 }

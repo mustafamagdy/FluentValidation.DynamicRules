@@ -1,4 +1,6 @@
 
+Rules:
+=======
 ✅ NotNull
 - NotEqual 
   ✅ with adjacent property
@@ -14,14 +16,19 @@
 ✅ LessThan, LessThanOrEqualTo, GreaterThan, GreaterThanOrEqualTo
   ✅ value
   ✅ with adjacent property
-- Must
+✅ Must
   ✅ method call
-  * predicate Func<TProp, bool>
-  * predicate Func<T, TProp, bool>
+  ✅ predicate Func<TProp, bool>
+  ✅ predicate Func<T, TProp, bool>
 ✅ EmailAddress
 ✅ CreditCard
-- ExclusiveBetween
-- InclusiveBetween
+✅ ExclusiveBetween
+✅ InclusiveBetween
 - ScalePrecision
 - Custom
 - Async*
+
+Others:
+=======
+- add multiple tests for each rule
+- abstract parser to support different serializable data
