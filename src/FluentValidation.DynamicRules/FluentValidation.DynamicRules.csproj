@@ -4,6 +4,32 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>10</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageVersion>0.0.1</PackageVersion>
+    <Title>FluentValidation.DynamicRules</Title>
+    <Authors>Mustafa Magdy</Authors>
+    <Description>Dynamic loaded rules for FluentValidation</Description>
+    <Copyright>MIT</Copyright>
+    <PackageProjectUrl>https://github.com/mustafamagdy/FluentValidation.DynamicRules</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mustafamagdy/FluentValidation.DynamicRules</RepositoryUrl>
+    <PackageTags>FluentValidation</PackageTags>
+    <PackageId>FluentValidationDynamicRules</PackageId>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>10</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageVersion>0.0.1</PackageVersion>
+    <Title>FluentValidation.DynamicRules</Title>
+    <Authors>Mustafa Magdy</Authors>
+    <Description>Dynamic loaded rules for FluentValidation</Description>
+    <Copyright>MIT</Copyright>
+    <PackageProjectUrl>https://github.com/mustafamagdy/FluentValidation.DynamicRules</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mustafamagdy/FluentValidation.DynamicRules</RepositoryUrl>
+    <PackageTags>FluentValidation</PackageTags>
+    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

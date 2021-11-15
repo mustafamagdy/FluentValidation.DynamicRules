@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace FluentValidation.DynamicRules.Extensions;
 
-public static class ReflectionHelper {
+internal static class ReflectionHelper {
   public static MethodInfo? GetStaticMethodForType(this Type type, string methodName, params Type[] paramTypes) {
     return GetMethodForType(type, methodName,
       BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static, paramTypes);

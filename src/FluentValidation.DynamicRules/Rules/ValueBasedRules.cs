@@ -1,6 +1,6 @@
 namespace FluentValidation.DynamicRules.Rules;
 
-public abstract class ValueBasedRules : PropertyRule {
+internal abstract class ValueBasedRules : PropertyRule {
   protected ValueBasedRules(RuleType rule, string message, object? value, string? anotherProp = null)
     : base(rule, message) {
     Value = value;

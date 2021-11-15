@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using FastExpressionCompiler;
+using FluentValidation;
 using FluentValidation.DynamicRules.Extensions;
 using FluentValidation.DynamicRules.Rules;
 using FluentValidation.Validators;
